@@ -45,6 +45,7 @@ class ShardTests(unittest.TestCase):
             self.assertNotIn('tests/t.pl', json.dumps(shards))
             self.assertTrue(all(not f.startswith('legacy/') for s in shards for f in s['files']))
 
+    @unittest.skipIf(os.name == "nt", "Windows needs developer mode to create test symlinks")
     def test_a_symlinked_source_is_followed_and_files_stay_relative_to_it(self):
         with tempfile.TemporaryDirectory() as ws, tempfile.TemporaryDirectory() as elsewhere:
             write(elsewhere, 'src/a.cbl', 'a\n' * 50)
@@ -70,6 +71,7 @@ class ShardTests(unittest.TestCase):
             self.assertEqual(run('make_shards.py', 's', 'C*', '--workspace', ws).returncode, 0)
             self.assertEqual(run('make_shards.py', 's', 'nothing*', '--workspace', ws).returncode, 1)
 
+    @unittest.skipIf(os.name == "nt", "Windows needs developer mode to create test symlinks")
     def test_links_and_paths_that_leave_the_source_are_not_shards(self):
         with tempfile.TemporaryDirectory() as ws, tempfile.TemporaryDirectory() as outside:
             write(ws, 'legacy/s/ok.pl', 'a\n' * 5)
@@ -89,6 +91,7 @@ class ShardTests(unittest.TestCase):
             self.assertEqual([f for s in shards for f in s['files']], ['ok.pl'])
             self.assertIn('outside the source directory', done.stdout)
 
+    @unittest.skipIf(os.name == "nt", "Windows needs developer mode to create test symlinks")
     def test_a_link_to_the_home_directory_or_root_is_refused(self):
         with tempfile.TemporaryDirectory() as ws:
             os.makedirs(os.path.join(ws, 'legacy'))

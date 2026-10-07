@@ -10,10 +10,10 @@ import type { Rule } from './reader/rules'
 import type { DeckScope } from './review/deck'
 
 export const PANE_ID = 'modernize'
-export const DECK_ID = 'modernize-review-pane'
-export const SIGN_ID = 'modernize-sign'
+export const DECK_ID = 'nvi-modernize-review-pane'
+export const SIGN_ID = 'nvi-modernize-sign'
 export const RASTER_KEY = 'estate'
-export const PLUGIN_NAME = 'code-modernization'
+export const PLUGIN_NAME = 'nvi-code-modernization'
 
 export type Options = {
   system: string
@@ -41,7 +41,7 @@ export function optionsOf(raw: PluginOptions): Options {
     track: pick(raw.track, ['auto', 'transform', 'uplift', 'reimagine'] as const, 'auto'),
     panel: pick(raw.panel, ['auto', 'command', 'off'] as const, 'auto'),
     isXrayOn: raw.xray !== false,
-    commandPrefix: str('commandPrefix', '/code-modernization:modernize-'),
+    commandPrefix: str('commandPrefix', '/nvi-code-modernization:nvi-modernize-'),
     legacyDir: str('legacyDir', 'legacy').replace(/^\.?\/+|\/+$/g, ''),
   }
 }
@@ -66,7 +66,7 @@ export type Activity = {
   isWorking: boolean
   turnId: string | null
   turnStartMs: number
-  /** The `/…modernize-<verb>` the current or last turn began with. */
+  /** The `/…nvi-modernize-<verb>` the current or last turn began with. */
   step: string | null
   running: Map<string, RunningCall>
   finished: FinishedCall[]

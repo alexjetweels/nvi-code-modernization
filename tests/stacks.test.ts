@@ -21,8 +21,8 @@ import {
 import { elementsOf, rowsOf, textOf, worldOf } from './fixtures/world'
 import { FULL } from './fixtures/workspace'
 
-const NAME = 'code-modernization'
-const PREFIX = '/p:modernize-'
+const NAME = 'nvi-code-modernization'
+const PREFIX = '/p:nvi-modernize-'
 
 async function read(files: Record<string, string>, more: Partial<ReadOptions> = {}): Promise<Snapshot> {
   const snapshot = await readSnapshot(memoryFs(files), new Map(), { commandPrefix: PREFIX, nowMs: 0, ...more })
@@ -329,7 +329,7 @@ describe('the estate, whatever the language', () => {
     expect(snapshot.stages.every(stage => !stage.isDone)).toBe(true)
     expect(snapshot.estate?.languages).toEqual([{ name: 'COBOL', share: 1 }])
     // Nothing written yet: the front door asks what the person wants, once, and gives the first step.
-    expect(snapshot.next?.text).toBe('/p:modernize ops')
+    expect(snapshot.next?.text).toBe('/p:nvi-modernize ops')
     expect(snapshot.next?.isByHand).toBe(false)
   })
 
@@ -396,14 +396,14 @@ describe('the pane in another stack', () => {
     expect(text).toContain('shop-core  matches baseline')
     expect(text).not.toContain('shop-batch  changed')
     expect(text).toContain('… 1 more')
-    expect(text).toContain('/code-modernization:modernize-uplift shop')
+    expect(text).toContain('/nvi-code-modernization:nvi-modernize-uplift shop')
     expect(text).not.toContain('<from>')
     expect(text).not.toContain('(by hand)')
     expect(text).not.toContain('extract-rules')
 
     // The button puts that command in the prompt, whatever the track.
     await $.ui.press({ plugin: NAME, key: 'next' })
-    expect(world.fills).toEqual(['/code-modernization:modernize-uplift shop'])
+    expect(world.fills).toEqual(['/nvi-code-modernization:nvi-modernize-uplift shop'])
   })
 
   test('a rewrite in PHP with no map still draws an estate map and its legend', async ($, on) => {
@@ -543,12 +543,12 @@ describe('showing and hiding the pane', () => {
     expect(world.opened.length).toBe(2)
     expect(textOf(await $.ui.render(BAND))).toBe('engine')
 
-    // The pane then draws, and a later /modernize-panel hides it.
+    // The pane then draws, and a later /nvi-modernize-panel hides it.
     await $.ui.render(PANE)
-    expect(await $.command.run(command('modernize-panel'))).toEqual({ text: 'Modernization pane hidden' })
+    expect(await $.command.run(command('nvi-modernize-panel'))).toEqual({ text: 'Modernization pane hidden' })
   })
 
-  test('/modernize-panel on a pane the engine is holding back shows it, and says why when it still cannot', async ($, on) => {
+  test('/nvi-modernize-panel on a pane the engine is holding back shows it, and says why when it still cannot', async ($, on) => {
     const world = worldOf(on, FULL)
     const clock = mock.clock(on)
 
@@ -559,7 +559,7 @@ describe('showing and hiding the pane', () => {
     await clock.advance(200)
 
     // The first command is not a "hide": there was nothing on screen to hide.
-    expect(await $.command.run(command('modernize-panel'))).toEqual({ text: 'Modernization pane shown' })
+    expect(await $.command.run(command('nvi-modernize-panel'))).toEqual({ text: 'Modernization pane shown' })
   })
 
   test('a pane the engine will not draw says so, instead of claiming it is shown', async ($, on) => {
@@ -569,20 +569,20 @@ describe('showing and hiding the pane', () => {
     world.unplaced = 5
     await $.session.start(SESSION)
 
-    const answer = await $.command.run(command('modernize-panel'))
+    const answer = await $.command.run(command('nvi-modernize-panel'))
 
     expect(answer.text).toContain('The pane could not be shown')
     expect(answer.text).toContain('144 columns')
   })
 
-  test('/modernize-panel is the same switch from the keyboard', async ($, on) => {
+  test('/nvi-modernize-panel is the same switch from the keyboard', async ($, on) => {
     const world = worldOf(on, FULL)
 
     mock.clock(on)
     await $.session.start(SESSION)
 
-    expect(await $.command.run(command('modernize-panel'))).toEqual({ text: 'Modernization pane shown' })
-    expect(await $.command.run(command('modernize-panel'))).toEqual({ text: 'Modernization pane hidden' })
+    expect(await $.command.run(command('nvi-modernize-panel'))).toEqual({ text: 'Modernization pane shown' })
+    expect(await $.command.run(command('nvi-modernize-panel'))).toEqual({ text: 'Modernization pane hidden' })
     expect(world.opened.length).toBe(1)
     expect(world.closed).toEqual(['modernize'])
   })
@@ -598,7 +598,7 @@ describe('showing and hiding the pane', () => {
 
     expect(world.opened).toEqual([])
     expect(textOf(await $.ui.render(BAND))).toBe('engine')
-    expect(await $.command.run(command('modernize-panel'))).toEqual({ text: 'Modernization pane shown' })
+    expect(await $.command.run(command('nvi-modernize-panel'))).toEqual({ text: 'Modernization pane shown' })
     expect(textOf(await $.ui.render(PANE))).toContain('COBOL 100%')
   })
 })

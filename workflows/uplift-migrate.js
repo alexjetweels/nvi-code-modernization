@@ -1,9 +1,9 @@
 export const meta = {
-  name: 'modernize-uplift-migrate',
+  name: 'nvi-modernize-uplift-migrate',
   description:
-    'Batched fan-out of /code-modernization:modernize-uplift Step 5b: one migrator agent per project/module, in dependency-aware escalating batches behind a per-batch circuit breaker',
+    'Batched fan-out of /nvi-code-modernization:nvi-modernize-uplift Step 5b: one migrator agent per project/module, in dependency-aware escalating batches behind a per-batch circuit breaker',
   whenToUse:
-    'Invoked by /code-modernization:modernize-uplift ONLY after the pilot unit is migrated in-session, analysis/<system>/PLAYBOOK.md is written, and the human has approved the fan-out. Requires args {system, source, target, units: [{name, path, deps?}], batchSize?}. Each unit\'s optional `deps` lists the sibling unit NAMES it depends on; a unit is only batched once every listed dep has BUILT, so a unit and its dependency never run in the same batch. Agents write only inside their own unit directory under modernized/<system>-uplifted/ — disjoint directories, so no worktree isolation is needed; solution/workspace-level shared files are owned by the calling session. Returns per-unit results plus three RE-PASSABLE unit lists ({name, path, deps}) — remainingUnits (never attempted), failedUnits (attempted, build failed), blockedUnits (skipped because a dependency failed) — any of which can be passed straight back as the next invocation\'s `units`. The calling session applies the returned sharedFileNeeds and folds playbookGaps into the playbook before re-invoking.',
+    'Invoked by /nvi-code-modernization:nvi-modernize-uplift ONLY after the pilot unit is migrated in-session, analysis/<system>/PLAYBOOK.md is written, and the human has approved the fan-out. Requires args {system, source, target, units: [{name, path, deps?}], batchSize?}. Each unit\'s optional `deps` lists the sibling unit NAMES it depends on; a unit is only batched once every listed dep has BUILT, so a unit and its dependency never run in the same batch. Agents write only inside their own unit directory under modernized/<system>-uplifted/ — disjoint directories, so no worktree isolation is needed; solution/workspace-level shared files are owned by the calling session. Returns per-unit results plus three RE-PASSABLE unit lists ({name, path, deps}) — remainingUnits (never attempted), failedUnits (attempted, build failed), blockedUnits (skipped because a dependency failed) — any of which can be passed straight back as the next invocation\'s `units`. The calling session applies the returned sharedFileNeeds and folds playbookGaps into the playbook before re-invoking.',
   phases: [
     {
       title: 'Migrate',
@@ -25,7 +25,7 @@ const target = ARGS && ARGS.target
 const units = ARGS && ARGS.units
 if (!system || !source || !target || !Array.isArray(units) || units.length === 0) {
   throw new Error(
-    'modernize-uplift-migrate requires args: {system, source, target, units: [{name, path, deps?}], batchSize?} — e.g. {system:"billing", source:".NET Framework 4.8", target:".NET 8", units:[{name:"Billing.Core", path:"src/Billing.Core"}, {name:"Billing.Api", path:"src/Billing.Api", deps:["Billing.Core"]}]}. Run it only AFTER the pilot unit is migrated in-session and analysis/<system>/PLAYBOOK.md exists.',
+    'nvi-modernize-uplift-migrate requires args: {system, source, target, units: [{name, path, deps?}], batchSize?} — e.g. {system:"billing", source:".NET Framework 4.8", target:".NET 8", units:[{name:"Billing.Core", path:"src/Billing.Core"}, {name:"Billing.Api", path:"src/Billing.Api", deps:["Billing.Core"]}]}. Run it only AFTER the pilot unit is migrated in-session and analysis/<system>/PLAYBOOK.md exists.',
   )
 }
 
@@ -301,7 +301,7 @@ ${fence(knownGaps.join('\n---\n').slice(0, 6000))}
   const results = await parallel(
     batch.map(u => () =>
       agent(promptFor(u, gapsBlock), {
-        agentType: 'code-modernization:uplift-migrator',
+        agentType: 'nvi-code-modernization:uplift-migrator',
         label: `migrate:${u.name}`,
         phase: 'Migrate',
         schema: RESULT_SCHEMA,

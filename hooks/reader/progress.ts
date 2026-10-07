@@ -244,7 +244,7 @@ export function isUnitDone(
   return module.state === 'reviewed' || (module.state === 'tests-green' && !hasRows)
 }
 
-/** The command that opens the whole process: the prefix without its verb dash (`/code-modernization:modernize`). */
+/** The command that opens the whole process: the prefix without its verb dash (`/nvi-code-modernization:nvi-modernize`). */
 export const frontDoorOf = (prefix: string): string => prefix.replace(/-$/, '')
 
 /**
@@ -421,7 +421,7 @@ function nextOfReimagine(prefix: string, system: string, stages: Stage[], module
 export type ReadOptions = {
   /** The system to read; the first one found when absent or unknown. */
   system?: string
-  /** What a command is written with, up to its verb (`/code-modernization:modernize-`). */
+  /** What a command is written with, up to its verb (`/nvi-code-modernization:nvi-modernize-`). */
   commandPrefix: string
   nowMs: number
   /** The read-only tree holding the systems, relative to the workspace; `legacy` when absent. */
@@ -567,7 +567,7 @@ export async function readSnapshot(
 
   const reviews = parseLedger(reviewsRaw)
 
-  const isScan = findingsHead !== null && /generated-by:\s*modernize-harden/.test(findingsHead.split('\n')[0] ?? '')
+  const isScan = findingsHead !== null && /generated-by:\s*nvi-modernize-harden/.test(findingsHead.split('\n')[0] ?? '')
 
   const transformed = await readModernizedIn(fs, transformRoot, observed)
 

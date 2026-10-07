@@ -5,7 +5,7 @@ import { BAND, command, HINT, MAIN_SCREEN_HINT, PANE, SESSION, SIGN_PANE } from 
 import { elementsOf, rowsOf, stringsOf, textOf, worldOf } from './fixtures/world'
 import { BRIEF_SIGNED, FULL, RULES, TOPOLOGY, UNSIGNED } from './fixtures/workspace'
 
-const NAME = 'code-modernization'
+const NAME = 'nvi-code-modernization'
 const BRIEF = 'analysis/billing/MODERNIZATION_BRIEF.md'
 
 describe('start and pane', () => {
@@ -15,7 +15,7 @@ describe('start and pane', () => {
     mock.clock(on)
     await $.session.start(SESSION)
 
-    expect(world.commands.sort()).toEqual(['modernize-panel', 'modernize-review-pane', 'modernize-sign'])
+    expect(world.commands.sort()).toEqual(['nvi-modernize-panel', 'nvi-modernize-review-pane', 'nvi-modernize-sign'])
     expect(world.opened).toEqual([])
   })
 
@@ -101,7 +101,7 @@ describe('start and pane', () => {
     const empty = textOf(await $.ui.render(PANE))
 
     expect(empty).toContain('Nothing to show yet')
-    expect(empty, 'a first-time user is told the one command to type').toContain('To begin, type /code-modernization:modernize.')
+    expect(empty, 'a first-time user is told the one command to type').toContain('To begin, type /nvi-code-modernization:nvi-modernize.')
   })
 
   test('the pane draws the system, its stages, phases, the transformed module and the next step', async ($, on) => {
@@ -120,7 +120,7 @@ describe('start and pane', () => {
     expect(text).toContain('P1 Interest pilot (D1)')
     expect(text).toContain('INTCALC')
     expect(text).toContain('12 tests pass')
-    expect(text, 'built and reviewed, and nothing has checked it: verify comes before anything else').toContain('/code-modernization:modernize-verify billing INTCALC')
+    expect(text, 'built and reviewed, and nothing has checked it: verify comes before anything else').toContain('/nvi-code-modernization:nvi-modernize-verify billing INTCALC')
 
     const raster = elementsOf(tree, 'Raster')[0] as { props: { columns: number; rows: number; cells: string } } | undefined
 
@@ -128,18 +128,18 @@ describe('start and pane', () => {
     expect(atob(raster?.props.cells ?? '').length).toBe(71 * (raster?.props.rows ?? 0) * 12)
   })
 
-  test('/modernize-panel toggles the pane and says which, and json prints the reading', async ($, on) => {
+  test('/nvi-modernize-panel toggles the pane and says which, and json prints the reading', async ($, on) => {
     const world = worldOf(on, FULL)
 
     mock.clock(on)
     await $.session.start(SESSION)
 
-    expect(await $.command.run(command('modernize-panel'))).toEqual({ text: 'Modernization pane shown' })
+    expect(await $.command.run(command('nvi-modernize-panel'))).toEqual({ text: 'Modernization pane shown' })
     expect(world.opened.at(-1)?.id).toBe('modernize')
-    expect(await $.command.run(command('modernize-panel'))).toEqual({ text: 'Modernization pane hidden' })
+    expect(await $.command.run(command('nvi-modernize-panel'))).toEqual({ text: 'Modernization pane hidden' })
     expect(world.closed).toEqual(['modernize'])
 
-    const { text } = await $.command.run(command('modernize-panel', 'json'))
+    const { text } = await $.command.run(command('nvi-modernize-panel', 'json'))
 
     expect(JSON.parse((text ?? '').replace(/```json\n|\n```/g, '')).modules[0]).toEqual({
       dir: 'INTCALC',
@@ -166,7 +166,7 @@ describe('start and pane', () => {
     expect(labels).toEqual(['hide', 'sign the brief', 'review rules'])
 
     await $.ui.press({ plugin: NAME, key: 'sign' })
-    expect(world.opened.at(-1)).toEqual({ id: 'modernize-sign', focus: true })
+    expect(world.opened.at(-1)).toEqual({ id: 'nvi-modernize-sign', focus: true })
     expect(world.fills).toEqual([])
   })
 
@@ -175,14 +175,14 @@ describe('start and pane', () => {
 
     mock.clock(on)
     await $.session.start(SESSION)
-    await $.command.run(command('modernize-panel'))
+    await $.command.run(command('nvi-modernize-panel'))
 
     const text = textOf(await $.ui.render(PANE))
 
-    expect(text).toContain('/code-modernization:modernize billing')
+    expect(text).toContain('/nvi-code-modernization:nvi-modernize billing')
     expect(text).toContain('start here')
     await $.ui.press({ plugin: NAME, key: 'next' })
-    expect(world.fills).toEqual(['/code-modernization:modernize billing'])
+    expect(world.fills).toEqual(['/nvi-code-modernization:nvi-modernize billing'])
   })
 
   test('the pane and the deck draw in theme colours and hex, never in ANSI names that fade on a light background', async ($, on) => {
@@ -190,13 +190,13 @@ describe('start and pane', () => {
     mock.clock(on)
     on('tool.call', ($, e) => (e.tool === 'Bash' ? { isError: true as const, result: 'x', text: 'error: the same thing broke here' } : { result: 'x', text: 'x' }))
     await $.session.start(SESSION)
-    await $.turn.start({ text: '/code-modernization:modernize-transform billing INTCALC java', turnId: 't1' })
+    await $.turn.start({ text: '/nvi-code-modernization:nvi-modernize-transform billing INTCALC java', turnId: 't1' })
 
     for (const agentId of ['w1', 'w2', 'w3']) {
       await $.tool.call({ tool: 'Bash', command: 'mvn -q test', agentId } as never)
     }
 
-    await $.command.run(command('modernize-review-pane', 'all'))
+    await $.command.run(command('nvi-modernize-review-pane', 'all'))
 
     const allowed = /^(#[0-9a-f]{6}|suggestion|success|error|warning|claude|inactive|subtle|text)$/
 
@@ -217,7 +217,7 @@ describe('start and pane', () => {
     await $.ui.render(PANE)
     await $.ui.press({ plugin: NAME, key: 'next' })
 
-    expect(world.fills).toEqual(['/code-modernization:modernize-transform billing INTCALC java-spring'])
+    expect(world.fills).toEqual(['/nvi-code-modernization:nvi-modernize-transform billing INTCALC java-spring'])
   })
 })
 
@@ -227,7 +227,7 @@ describe('pane budget', () => {
     mock.clock(on)
     on('tool.call', ($, e) => (e.tool === 'Bash' ? { isError: true as const, result: 'x', text: 'error: the same thing broke here' } : { result: 'x', text: 'x' }))
     await $.session.start(SESSION)
-    await $.turn.start({ text: '/code-modernization:modernize-transform billing INTCALC java', turnId: 't1' })
+    await $.turn.start({ text: '/nvi-code-modernization:nvi-modernize-transform billing INTCALC java', turnId: 't1' })
 
     for (const agentId of ['w1', 'w2', 'w3', 'w4']) {
       await $.tool.call({ tool: 'Read', file_path: '/work/legacy/billing/app/cbl/INTCALC.cbl', agentId } as never)
@@ -410,7 +410,7 @@ describe('a busy fleet', () => {
 })
 
 describe('review deck', () => {
-  test('/modernize-review-pane draws the first flagged card in the band, and a digit decides it', async ($, on) => {
+  test('/nvi-modernize-review-pane draws the first flagged card in the band, and a digit decides it', async ($, on) => {
     const world = worldOf(on, FULL)
     const clock = mock.clock(on)
 
@@ -418,7 +418,7 @@ describe('review deck', () => {
     await $.session.start(SESSION)
 
     expect(textOf(await $.ui.render(BAND)), 'closed: the band holds only the bar that shows the pane').toContain('show pane')
-    expect(await $.command.run(command('modernize-review-pane'))).toEqual({ text: 'Reviewing 2 rules.' })
+    expect(await $.command.run(command('nvi-modernize-review-pane'))).toEqual({ text: 'Reviewing 2 rules.' })
 
     const card = await $.ui.render(BAND)
     const text = textOf(card)
@@ -448,7 +448,7 @@ describe('review deck', () => {
     worldOf(on, FULL)
     mock.clock(on)
     await $.session.start(SESSION)
-    await $.command.run(command('modernize-review-pane', 'all'))
+    await $.command.run(command('nvi-modernize-review-pane', 'all'))
 
     for (const maxRows of [12, 16, 20, 30]) {
       const input = { ...BAND, props: { ...BAND.props, maxRows } }
@@ -470,7 +470,7 @@ describe('review deck', () => {
 
     on('ui.render', () => ({ type: 'Text', children: ['engine'] }))
     await $.session.start(SESSION)
-    await $.command.run(command('modernize-review-pane', 'all'))
+    await $.command.run(command('nvi-modernize-review-pane', 'all'))
     await $.ui.render(BAND)
     await $.ui.press({ plugin: NAME, key: 'prev' })
 
@@ -518,7 +518,7 @@ describe('review deck', () => {
     expect(first).not.toContain('marked wrong')
 
     world.put('analysis/billing/RULE_REVIEWS.json', file({ 'P0-001': { verdict: 'discuss', at: '2026-09-16' }, 'P0-002': { verdict: 'wrong', at: '2026-09-16' } }))
-    await $.command.run(command('modernize-panel', 'json'))
+    await $.command.run(command('nvi-modernize-panel', 'json'))
 
     const second = textOf(await $.ui.render(PANE))
 
@@ -531,7 +531,7 @@ describe('review deck', () => {
     mock.clock(on)
     on('ui.render', () => ({ type: 'Text', children: ['engine'] }))
     await $.session.start(SESSION)
-    await $.command.run(command('modernize-review-pane', 'p0'))
+    await $.command.run(command('nvi-modernize-review-pane', 'p0'))
     await $.ui.render(BAND)
     await $.ui.press({ plugin: NAME, key: 'close' })
 
@@ -548,8 +548,8 @@ describe('signing', () => {
     await $.session.start(SESSION)
 
     expect(textOf(await $.ui.render(PANE))).toContain('approve the brief')
-    expect(await $.command.run(command('modernize-sign'))).toEqual({})
-    expect(world.opened.at(-1)).toEqual({ id: 'modernize-sign', focus: true })
+    expect(await $.command.run(command('nvi-modernize-sign'))).toEqual({})
+    expect(world.opened.at(-1)).toEqual({ id: 'nvi-modernize-sign', focus: true })
 
     const dialog = await $.ui.render(SIGN_PANE)
 
@@ -561,7 +561,7 @@ describe('signing', () => {
     expect(textOf(await $.ui.render(SIGN_PANE)), 'no name, no signature').toContain('Type the approver')
 
     await $.ui.press({ plugin: NAME, key: 'cancel' })
-    expect(await $.command.run(command('modernize-sign', 'Ana Lopez, VP Eng')), 'the name can ride the command').toEqual({})
+    expect(await $.command.run(command('nvi-modernize-sign', 'Ana Lopez, VP Eng')), 'the name can ride the command').toEqual({})
     expect(textOf(await $.ui.render(SIGN_PANE))).toContain('Ana Lopez, VP Eng')
     await $.ui.press({ plugin: NAME, key: 'full' })
     await $.ui.press({ plugin: NAME, key: 'do-sign' })
@@ -570,7 +570,7 @@ describe('signing', () => {
     const signed = world.files.get(BRIEF) ?? ''
 
     expect(parseBrief(signed).approval).toEqual({ isSigned: true, by: 'Ana Lopez, VP Eng', date: parseBrief(signed).approval.date, covers: 'full' })
-    expect(world.closed).toContain('modernize-sign')
+    expect(world.closed).toContain('nvi-modernize-sign')
     expect(world.logs.some(text => text.includes('brief signed by Ana Lopez, VP Eng (full plan)'))).toBe(true)
 
     const after = await $.tool.call({ tool: 'Bash', command: 'ls' })
@@ -584,7 +584,7 @@ describe('signing', () => {
     mock.clock(on)
     await $.session.start(SESSION)
 
-    expect((await $.command.run(command('modernize-sign'))).text).toContain('already signed by VP Engineering')
+    expect((await $.command.run(command('nvi-modernize-sign'))).text).toContain('already signed by VP Engineering')
   })
 })
 

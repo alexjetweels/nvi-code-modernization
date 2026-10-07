@@ -7,7 +7,7 @@ arguments: system
 Run a **security hardening pass** on the legacy system: find vulnerabilities, rank them, and produce a
 reviewable patch for the critical ones. `$system` is the first argument; flags go after it
 (`<system> --show-secrets`), since a flag in first place would be read as the system name.
-The code is `legacy/$system`, often a symlink to where it really lives: say where it points (`readlink legacy/$system`) in one line before you start. If `legacy/$system` does not exist, stop and say so: nothing can run without the code, so the fix is `/code-modernization:modernize $system --source <path to the code>`. Run every subagent in the foreground and wait for its result: never end your turn while one is still running.
+The code is `legacy/$system`, often a symlink to where it really lives: say where it points (`readlink legacy/$system`) in one line before you start. If `legacy/$system` does not exist, stop and say so: nothing can run without the code, so the fix is `/nvi-code-modernization:nvi-modernize $system --source <path to the code>`. Run every subagent in the foreground and wait for its result: never end your turn while one is still running.
 
 This command never edits `legacy/$system`: it writes findings and a proposed patch to `analysis/$system/`, and the
 user reviews and applies (or not).
@@ -39,7 +39,7 @@ Call it by name (the plugin registers it). If the tool does not know the name, p
 
 ```
 Workflow({
-  name: "code-modernization:modernize-harden-scan",
+  name: "nvi-code-modernization:nvi-modernize-harden-scan",
   args: { system: "$system" }
 })
 ```
@@ -115,7 +115,7 @@ Refresh the report (`python3 "${CLAUDE_PLUGIN_ROOT}/scripts/build_report.py" $sy
   `patch -p1 -d legacy/$system < analysis/$system/security_remediation.patch`.
 - `analysis/$system/security_remediation.local.patch`: the credential fixes, applied the same way; rotate the
   affected credentials regardless.
-- Rerun `/code-modernization:modernize-harden $system` after applying, to confirm resolution.
+- Rerun `/nvi-code-modernization:nvi-modernize-harden $system` after applying, to confirm resolution.
 
 ### Re-running coverage gaps
 
@@ -123,7 +123,7 @@ Only when the user takes the offer. Call the workflow again with just the gaps, 
 
 ```
 Workflow({
-  name: "code-modernization:modernize-harden-scan",
+  name: "nvi-code-modernization:nvi-modernize-harden-scan",
   args: { system: "$system", classes: <deadFinders>, findings: <unverified> }
 })
 ```

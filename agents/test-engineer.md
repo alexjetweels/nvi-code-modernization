@@ -20,7 +20,7 @@ someone thinks it should do) so that a rewrite can be proven equivalent.
 - **Name the rule each test pins.** When `analysis/<system>/BUSINESS_RULES.md`
   exists, each test or golden case names the `RULE-NNN` id(s) it pins, in its
   display name, in its method name where a hyphen is not allowed
-  (`rule017_emptyInput`), or in a one-line comment. `modernize-verify` finds
+  (`rule017_emptyInput`), or in a one-line comment. `nvi-modernize-verify` finds
   tests by that id: a test that names no rule counts for no rule.
 - **Cover the edges the legacy covers.** Read the legacy code's branches.
   Every IF/EVALUATE/switch arm gets at least one test case. Boundary values

@@ -30,7 +30,7 @@ export const PANE: RenderInput<'Pane'> = {
   },
 }
 
-export const SIGN_PANE: RenderInput<'Pane'> = { ...PANE, requestId: 'modernize-sign', props: { ...PANE.props, placement: 'inline' } }
+export const SIGN_PANE: RenderInput<'Pane'> = { ...PANE, requestId: 'nvi-modernize-sign', props: { ...PANE.props, placement: 'inline' } }
 
 export const BAND: RenderInput<'AbovePrompt'> = {
   component: 'AbovePrompt',

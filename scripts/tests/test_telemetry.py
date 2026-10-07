@@ -1,6 +1,6 @@
 """Tests for the usage counts (scripts/telemetry.py, scripts/telemetry.sh and the hooks that call them).
 
-Run:  python3 -m unittest discover -s plugins/code-modernization/scripts/tests
+Run:  python3 -m unittest discover -s plugins/nvi-code-modernization/scripts/tests
 """
 import contextlib
 import io
@@ -234,30 +234,30 @@ class Commands(Base):
 
     def test_the_plugins_commands_have_a_number_each(self):
         for verb, n in tm.COMMANDS.items():
-            prompt = "/code-modernization:modernize" + ("-" + verb if verb else "")
+            prompt = "/nvi-code-modernization:nvi-modernize" + ("-" + verb if verb else "")
             self.assertEqual(self.cmd(prompt + " sys")["cmd"], n, prompt)
-        self.assertEqual(self.cmd("/modernize")["cmd"], 1)
-        self.assertEqual(self.cmd("  /code-modernization:modernize-verify")["cmd"], 11)
-        self.assertEqual(self.cmd("/code-modernization:modernize-harden-scan x")["cmd"], 99)
-        self.assertEqual([self.cmd("/modernize-" + v)["cmd"] for v in ("panel", "review-pane", "sign")], [20, 21, 22])
-        self.assertEqual(self.cmd("/code-modernization:modernize-review")["cmd"], 6)
-        self.assertEqual(self.cmd("/modernize-review")["cmd"], 6)          # the bare name is the plugin's command now that the pane's deck has its own
+        self.assertEqual(self.cmd("/nvi-modernize")["cmd"], 1)
+        self.assertEqual(self.cmd("  /nvi-code-modernization:nvi-modernize-verify")["cmd"], 11)
+        self.assertEqual(self.cmd("/nvi-code-modernization:nvi-modernize-harden-scan x")["cmd"], 99)
+        self.assertEqual([self.cmd("/nvi-modernize-" + v)["cmd"] for v in ("panel", "review-pane", "sign")], [20, 21, 22])
+        self.assertEqual(self.cmd("/nvi-code-modernization:nvi-modernize-review")["cmd"], 6)
+        self.assertEqual(self.cmd("/nvi-modernize-review")["cmd"], 6)          # the bare name is the plugin's command now that the pane's deck has its own
 
     def test_other_prompts_are_not_counted(self):
-        for prompt in ("", None, "modernize this", "/modernizer", "/other:modernize", "please /modernize", "/code-modernization:assess", 5, {"a": 1}):
+        for prompt in ("", None, "modernize this", "/modernizer", "/other:nvi-modernize", "please /nvi-modernize", "/nvi-code-modernization:assess", 5, {"a": 1}):
             self.assertIsNone(self.cmd(prompt), prompt)
 
     def test_the_command_says_where_the_system_stands_and_whether_source_was_given(self):
-        s = self.cmd("/code-modernization:modernize-verify sys --source /work/x")
+        s = self.cmd("/nvi-code-modernization:nvi-modernize-verify sys --source /work/x")
         self.assertEqual((s["has_source"], s["fresh"], s["systems"], s["goal"]), (1, 0, 1, 3))
         self.assertEqual(s["done"], tm.state_metrics(self.ws)["done"])
-        new = tm.command_metrics("/code-modernization:modernize billing --source /a", os.path.join(self.tmp, "fresh-folder"))
+        new = tm.command_metrics("/nvi-code-modernization:nvi-modernize billing --source /a", os.path.join(self.tmp, "fresh-folder"))
         self.assertEqual((new["fresh"], new["systems"], new["done"], new["has_source"]), (1, 0, 0, 1))
 
     def test_the_permission_mode_is_a_number_from_a_fixed_list(self):
         for mode, want in (("default", 1), ("auto", 4), ("bypassPermissions", 5), ("something new", 0), (None, 0), (7, 0)):
-            self.assertEqual(tm.command_metrics("/modernize", self.ws, mode)["perm"], want, mode)
-        out = self.hook("command", {"cwd": self.ws, "prompt": "/modernize", "permission_mode": "plan"})
+            self.assertEqual(tm.command_metrics("/nvi-modernize", self.ws, mode)["perm"], want, mode)
+        out = self.hook("command", {"cwd": self.ws, "prompt": "/nvi-modernize", "permission_mode": "plan"})
         self.assertEqual(json.loads(out)["metrics"]["perm"], 3)
 
     def test_a_named_system_is_the_one_counted_and_its_name_is_never_sent(self):
@@ -265,8 +265,8 @@ class Commands(Base):
         os.utime(os.path.join(self.ws, "analysis", "sys"), (1, 1))
         for f in os.scandir(os.path.join(self.ws, "analysis", "sys")):
             os.utime(f.path, (1, 1))
-        named = self.cmd("/code-modernization:modernize-status sys")
-        newest = self.cmd("/code-modernization:modernize-status")
+        named = self.cmd("/nvi-code-modernization:nvi-modernize-status sys")
+        newest = self.cmd("/nvi-code-modernization:nvi-modernize-status")
         self.assertNotEqual(named["done"], newest["done"])
         self.assertEqual(named["systems"], 2)
         for value in named.values():
@@ -283,7 +283,7 @@ class Sending(Base):
             for k in keys:
                 self.assertRegex(k, r"^[a-z][a-z0-9_]{0,39}$")
                 self.assertIn(k, tm.MEANING)
-        for out in (self.hook("state", {"cwd": self.ws}), self.hook("command", {"cwd": self.ws, "prompt": "/code-modernization:modernize-map"})):
+        for out in (self.hook("state", {"cwd": self.ws}), self.hook("command", {"cwd": self.ws, "prompt": "/nvi-code-modernization:nvi-modernize-map"})):
             line = json.loads(out)
             self.assertEqual(list(line), ["metrics"])
             self.assertTrue(all(type(v) is int and 0 <= v <= tm.CAP for v in line["metrics"].values()), line)
@@ -306,8 +306,8 @@ class Sending(Base):
         put(self.ws, "analysis/sys/RULE_REVIEWS.json", {"reviews": {"RULE-001": {"verdict": "wrong"}}})
         self.assertIn('"rev_wrong":1', self.hook("state", {"cwd": self.ws}))
         self.assertEqual(self.hook("state", {"cwd": self.ws}), "")
-        self.assertTrue(self.hook("command", {"cwd": self.ws, "prompt": "/modernize"}))
-        self.assertTrue(self.hook("command", {"cwd": self.ws, "prompt": "/modernize"}))
+        self.assertTrue(self.hook("command", {"cwd": self.ws, "prompt": "/nvi-modernize"}))
+        self.assertTrue(self.hook("command", {"cwd": self.ws, "prompt": "/nvi-modernize"}))
 
     def test_when_it_cannot_remember_it_sends_nothing_rather_than_repeat_every_turn(self):
         os.environ["CLAUDE_PLUGIN_DATA"] = os.path.join(self.tmp, "does-not-exist")
@@ -322,7 +322,7 @@ class Sending(Base):
             self.hook("state", {"cwd": self.ws})
             self.hook("state", {"cwd": os.path.join(self.tmp, "nowhere")})
             self.hook("command", {"cwd": self.ws, "prompt": "hello"})
-            self.hook("command", {"cwd": self.ws, "prompt": "/modernize"})
+            self.hook("command", {"cwd": self.ws, "prompt": "/nvi-modernize"})
             with mock.patch.dict(os.environ, {"CODE_MODERNIZATION_TELEMETRY": "0"}):
                 self.hook("state", {"cwd": self.ws})
             with mock.patch.object(tm, "state_metrics", side_effect=KeyError("x")), mock.patch.object(sys, "stdin", io.StringIO("{}")), \
@@ -349,7 +349,7 @@ class Sending(Base):
             self.hook("state", {"cwd": self.ws})
         self.assertFalse(os.path.exists(elsewhere))      # a path in the variable is not a switch
         with mock.patch.dict(os.environ, {"CODE_MODERNIZATION_TELEMETRY_DEBUG": "1"}):
-            self.hook("command", {"cwd": self.ws, "prompt": "/modernize"})
+            self.hook("command", {"cwd": self.ws, "prompt": "/nvi-modernize"})
         with open(victim) as fh:
             self.assertEqual(fh.read(), "keep")
 
@@ -361,7 +361,7 @@ class Sending(Base):
             with mock.patch.dict(os.environ, {name: value}):
                 self.assertTrue(tm.off_reason(), name)
                 self.assertEqual(self.hook("state", {"cwd": self.ws}), "", name)
-                self.assertEqual(self.hook("command", {"cwd": self.ws, "prompt": "/modernize"}), "", name)
+                self.assertEqual(self.hook("command", {"cwd": self.ws, "prompt": "/nvi-modernize"}), "", name)
         for name, value in (("CODE_MODERNIZATION_TELEMETRY", "1"), ("CODE_MODERNIZATION_TELEMETRY", ""), ("CLAUDE_PLUGIN_OPTION_TELEMETRY", "true"),
                             ("CLAUDE_PLUGIN_OPTION_TELEMETRY", "  TRUE "), ("DISABLE_TELEMETRY", "0")):
             with mock.patch.dict(os.environ, {name: value}):
@@ -378,9 +378,9 @@ class Sending(Base):
     def test_show_prints_what_would_be_sent_in_words_and_as_json(self):
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
-            tm.show([self.ws, "--prompt", "/code-modernization:modernize-verify sys"])
+            tm.show([self.ws, "--prompt", "/nvi-code-modernization:nvi-modernize-verify sys"])
         text = out.getvalue()
-        for word in ("Sending is on", "rules", "business rules found", "steps that have left their file", "preflight, assess, map, rules", "modernize-verify"):
+        for word in ("Sending is on", "rules", "business rules found", "steps that have left their file", "preflight, assess, map, rules", "nvi-modernize-verify"):
             self.assertIn(word, text)
         out = io.StringIO()
         with contextlib.redirect_stdout(out), mock.patch.dict(os.environ, {"CODE_MODERNIZATION_TELEMETRY": "0"}):
@@ -410,15 +410,15 @@ class Hardening(Base):
         self.assertIsNotNone(tm.state_metrics(other))
 
     def test_another_tools_commands_are_not_counted_and_the_newest_folder_need_not_be_the_plugins(self):
-        self.assertIsNone(tm.command_metrics("/modernize-schema", self.ws))
-        self.assertEqual(tm.command_metrics("/code-modernization:modernize-schema", self.ws)["cmd"], 99)
+        self.assertIsNone(tm.command_metrics("/nvi-modernize-schema", self.ws))
+        self.assertEqual(tm.command_metrics("/nvi-code-modernization:nvi-modernize-schema", self.ws)["cmd"], 99)
         put(self.ws, "analysis/zzz-data/results.csv", "a,b\n")
         self.assertEqual(tm.state_metrics(self.ws)["rules"], 3)
 
     def test_a_new_name_is_a_new_system_and_a_flags_value_is_not_a_name(self):
-        new = tm.command_metrics("/code-modernization:modernize-preflight billing --source /x", self.ws)
+        new = tm.command_metrics("/nvi-code-modernization:nvi-modernize-preflight billing --source /x", self.ws)
         self.assertEqual((new["fresh"], new["done"], new["goal"], new["has_source"]), (1, 0, 0, 1))
-        newest = tm.command_metrics("/modernize --source elsewhere", self.ws)
+        newest = tm.command_metrics("/nvi-modernize --source elsewhere", self.ws)
         self.assertEqual((newest["fresh"], newest["has_source"]), (0, 1))
         self.assertEqual(tm.system_word(["--source", "abc", "def"]), "def")
         self.assertIsNone(tm.system_word(["--source", "abc", "/work/x"]))
@@ -490,11 +490,11 @@ class Environment(Base):
 
     def test_the_shell_wrappers_answers_are_used_and_bounded(self):
         with mock.patch.dict(os.environ, {"CODE_MODERNIZATION_OS": "3", "CODE_MODERNIZATION_PY": "4", "CODE_MODERNIZATION_PATHF": "5"}):
-            got = tm.command_metrics("/modernize", self.ws)
+            got = tm.command_metrics("/nvi-modernize", self.ws)
         self.assertEqual((got["os"], got["py"], got["pathf"]), (3, 4, 5))
         self.assertEqual(got["pyv"], sys.version_info[0] * 100 + sys.version_info[1])
         with mock.patch.dict(os.environ, {"CODE_MODERNIZATION_OS": "77", "CODE_MODERNIZATION_PY": "-1", "CODE_MODERNIZATION_PATHF": "x"}):
-            got = tm.command_metrics("/modernize", self.ws)
+            got = tm.command_metrics("/nvi-modernize", self.ws)
         self.assertEqual((got["os"], got["py"]), (9, 0))
         self.assertIn(got["os"], range(0, 10))
 
@@ -520,7 +520,7 @@ class Failures(Base):
              ("Bash", "Python was not found; run without arguments to install from the Microsoft Store.", 2),
              ("Bash", "xcode-select: note: no developer tools were found at '/Applications/Xcode.app'", 3),
              ("Bash", "Exit code 1\n  File \"x.py\", line 3\nSyntaxError: invalid syntax", 4),
-             ("Bash", "Traceback (most recent call last):\n  File \"/x/code-modernization/1.0.0/scripts/build_report.py\", line 9\nKeyError: 'a'", 5),
+             ("Bash", "Traceback (most recent call last):\n  File \"/x/nvi-code-modernization/1.0.0/scripts/build_report.py\", line 9\nKeyError: 'a'", 5),
              ("Edit", "Permission for this action was denied by the auto mode classifier", 6), ("Bash", "Permission to use Bash with command x has been denied.", 6),
              ("Write", "EACCES: permission denied, open '/x'", 7), ("Bash", "Exit code 124\ncommand timed out after 120s", 8),
              ("Read", "File does not exist. Note: your current working directory is /x.", 9), ("Bash", "Exit code 127\n(eval):1: command not found: python3_not_a_real_program", 9),
@@ -621,6 +621,7 @@ class OwnErrors(Base):
         self.assertEqual([t for t in threading.enumerate() if isinstance(t, threading.Timer)], [])
 
 
+@unittest.skipIf(os.name == "nt", "the shell-hook fixture requires Unix symlinks and /bin/sh")
 class Shell(unittest.TestCase):
     """scripts/telemetry.sh must start Python only when the plugin is in use."""
 
@@ -642,7 +643,7 @@ class Shell(unittest.TestCase):
         return done.stdout
 
     def test_a_plugin_command_is_counted_and_the_end_of_a_turn_in_a_workspace_is_counted(self):
-        out = self.run_hook("command", {"cwd": self.ws, "prompt": "/code-modernization:modernize-status sys"})
+        out = self.run_hook("command", {"cwd": self.ws, "prompt": "/nvi-code-modernization:nvi-modernize-status sys"})
         self.assertEqual(json.loads(out)["metrics"]["cmd"], 13)
         self.assertEqual(json.loads(self.run_hook("state", {"cwd": self.ws}))["metrics"]["rules"], 3)
         self.assertEqual(self.run_hook("state", {"cwd": self.ws}), "")
@@ -660,7 +661,7 @@ class Shell(unittest.TestCase):
         self.assertEqual(self.run_hook("nonsense", {}), "")
         # no python at all: quiet for a turn's end, and a typed command is reported in numbers by the shell itself
         self.assertEqual(self.run_hook("state", {"cwd": self.ws}, path=no_python), "")
-        said = json.loads(self.run_hook("command", {"prompt": "/modernize"}, path=no_python))["metrics"]
+        said = json.loads(self.run_hook("command", {"prompt": "/nvi-modernize"}, path=no_python))["metrics"]
         self.assertEqual((said["cmd"], said["py"], said["pyv"]), (1, 1, 0))
 
     def toolbox(self, name, **fake):
@@ -686,23 +687,23 @@ class Shell(unittest.TestCase):
 
     def test_windows_is_recognised_and_a_missing_python_is_reported_by_the_shell(self):
         box = self.toolbox("win", uname="#!/bin/sh\necho MINGW64_NT-10.0-19045\n")
-        got = self.say("command", {"prompt": "/code-modernization:modernize-verify x"}, path=box)
+        got = self.say("command", {"prompt": "/nvi-code-modernization:nvi-modernize-verify x"}, path=box)
         self.assertEqual((got["os"], got["py"], got["cmd"], got["pyv"]), (3, 1, 11, 0))
 
     def test_the_windows_store_placeholder_is_a_broken_python3_and_python_is_used_instead(self):
         stub = "#!/bin/sh\necho 'Python was not found; run without arguments to install from the Microsoft Store.' >&2\nexit 49\n"
         box = self.toolbox("store", python3=stub, uname="#!/bin/sh\necho MSYS_NT-10.0\n")
-        self.assertEqual(self.say("command", {"prompt": "/modernize"}, path=box)["py"], 3)       # nothing else to fall back to
+        self.assertEqual(self.say("command", {"prompt": "/nvi-modernize"}, path=box)["py"], 3)       # nothing else to fall back to
         box = self.toolbox("store2", python3=stub, python="python", uname="#!/bin/sh\necho MSYS_NT-10.0\n")
-        got = self.say("command", {"prompt": "/modernize"}, path=box)                             # python does the work, and says so
+        got = self.say("command", {"prompt": "/nvi-modernize"}, path=box)                             # python does the work, and says so
         self.assertEqual((got["os"], got["py"], got["cmd"]), (3, 4, 1))
         self.assertEqual(got["pyv"], sys.version_info[0] * 100 + sys.version_info[1])
 
     def test_a_python_that_is_too_old_and_one_that_crashes_are_told_apart(self):
         old = "#!/bin/sh\ncase \"$1\" in -c) echo 307 ;; *) exit 1 ;; esac\n"
         crash = "#!/bin/sh\ncase \"$1\" in -c) echo 311 ;; *) exit 1 ;; esac\n"
-        self.assertEqual(self.say("command", {"prompt": "/modernize"}, path=self.toolbox("old", python3=old))["py"], 5)
-        self.assertEqual(self.say("command", {"prompt": "/modernize"}, path=self.toolbox("crash", python3=crash))["py"], 6)
+        self.assertEqual(self.say("command", {"prompt": "/nvi-modernize"}, path=self.toolbox("old", python3=old))["py"], 5)
+        self.assertEqual(self.say("command", {"prompt": "/nvi-modernize"}, path=self.toolbox("crash", python3=crash))["py"], 6)
 
     def test_health_is_sent_once_per_version_even_when_python_is_missing(self):
         box = self.toolbox("nopy")
@@ -728,7 +729,7 @@ class Shell(unittest.TestCase):
     def test_a_folder_with_a_space_and_an_accent_is_flagged(self):
         odd = os.path.join(self.tmp, "my caf\u00e9 work")
         os.makedirs(odd)
-        got = self.say("command", {"prompt": "/modernize"}, cwd=odd)
+        got = self.say("command", {"prompt": "/nvi-modernize"}, cwd=odd)
         self.assertEqual(got["pathf"], 3)
 
     def test_python_starts_only_where_the_plugin_has_left_its_files(self):
@@ -787,9 +788,11 @@ class Shipped(unittest.TestCase):
         self.assertRegex(manifest["version"], r"^\d+\.\d+\.\d+$")
         option = manifest["userConfig"]["telemetry"]
         self.assertEqual((option["type"], option["default"]), ("boolean", True))
-        with open(os.path.join(PLUGIN, "..", "..", ".claude-plugin", "marketplace.json"), encoding="utf-8") as fh:
-            entry = next(p for p in json.load(fh)["plugins"] if p["name"] == "code-modernization")
-        self.assertNotIn("version", entry)  # the manifest is the one place the number lives
+        marketplace = os.path.join(PLUGIN, "..", "..", ".claude-plugin", "marketplace.json")
+        if os.path.isfile(marketplace):
+            with open(marketplace, encoding="utf-8") as fh:
+                entry = next(p for p in json.load(fh)["plugins"] if p["name"] == "nvi-code-modernization")
+            self.assertNotIn("version", entry)  # the manifest is the one place the number lives
 
     def test_the_changelog_names_the_manifest_version_first(self):
         version = json.loads(self.read(".claude-plugin", "plugin.json"))["version"]

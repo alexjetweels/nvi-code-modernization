@@ -9,7 +9,7 @@ directory that follows. Otherwise run **Single-system mode** on `$system`, the
 first token. Flags go after it (`<system> --show-secrets`): a flag in first place
 would be read as the system name.
 
-The code is `legacy/$system`, often a symlink to where it really lives: say where it points (`readlink legacy/$system`) in one line before you start. If `legacy/$system` does not exist, stop and say so: nothing can run without the code, so the fix is `/code-modernization:modernize $system --source <path to the code>`. Run every subagent in the foreground and wait for its result: never end your turn while one is still running.
+The code is `legacy/$system`, often a symlink to where it really lives: say where it points (`readlink legacy/$system`) in one line before you start. If `legacy/$system` does not exist, stop and say so: nothing can run without the code, so the fix is `/nvi-code-modernization:nvi-modernize $system --source <path to the code>`. Run every subagent in the foreground and wait for its result: never end your turn while one is still running.
 
 ---
 
@@ -27,7 +27,7 @@ Call it by name (the plugin registers it). If the tool does not know the name, p
 
 ```
 Workflow({
-  name: "code-modernization:modernize-portfolio-assess",
+  name: "nvi-code-modernization:nvi-modernize-portfolio-assess",
   args: { parentDir: "<parent-dir>", systems: ["<sub1>", "<sub2>", ...] }
 })
 ```
@@ -155,4 +155,4 @@ legacy-analyst.
 Refresh the report: `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/build_report.py" $system`
 (a convenience: if it fails or `python3` is missing, say so in one line and carry on). Tell the user the assessment is ready
 (`analysis/$system/ASSESSMENT.md`, and the report at `analysis/$system/REPORT.html`) and
-that the next step is `/code-modernization:modernize-map $system`.
+that the next step is `/nvi-code-modernization:nvi-modernize-map $system`.

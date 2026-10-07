@@ -5,7 +5,7 @@ import { MAVEN_UPLIFT, REIMAGINE, LEGACY_ONLY } from './fixtures/stacks'
 import { worldOf } from './fixtures/world'
 import { FULL, UNSIGNED } from './fixtures/workspace'
 
-const PLUGIN = 'code-modernization'
+const PLUGIN = 'nvi-code-modernization'
 
 type Mounted = { surface: string; unmount: () => Promise<void> }
 
@@ -48,7 +48,7 @@ describe('what the plugin draws is accepted by the terminal', () => {
       mock.clock(on)
       on('ui.render', () => ({ type: 'Text', children: [''] }))
       await $.session.start(SESSION)
-      await $.command.run(command('modernize-panel'))
+      await $.command.run(command('nvi-modernize-panel'))
 
       for (const bodyColumns of [26, 48, 72]) {
         expect(await accepted($)({ ...PANE, plugin: PLUGIN, props: { ...PANE.props, bodyColumns, scroll: { offset: 0, bodyRows: 40 } } })).toBe('terminal')
@@ -72,7 +72,7 @@ describe('what the plugin draws is accepted by the terminal', () => {
 
     expect(await accepted($)({ ...BAND, plugin: PLUGIN })).toBe('terminal')
 
-    await $.command.run(command('modernize-review-pane', 'all'))
+    await $.command.run(command('nvi-modernize-review-pane', 'all'))
     await $.ui.render(BAND)
     await $.ui.press({ plugin: PLUGIN, key: 'prev' })
 
@@ -87,7 +87,7 @@ describe('what the plugin draws is accepted by the terminal', () => {
     await $.ui.render(BAND)
     await $.ui.press({ plugin: PLUGIN, key: 'close' })
 
-    await $.command.run(command('modernize-sign'))
+    await $.command.run(command('nvi-modernize-sign'))
     expect(await accepted($)({ ...SIGN_PANE, plugin: PLUGIN })).toBe('terminal')
   })
 })

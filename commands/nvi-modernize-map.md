@@ -8,7 +8,7 @@ Build a **dependency and topology map** of the system and render it as an
 interactive page. The assessment found the domains; this goes one level down:
 how do the *pieces* connect? It is the map an engineer needs before touching anything.
 
-The code is `legacy/$system`, often a symlink to where it really lives: say where it points (`readlink legacy/$system`) in one line before you start. If `legacy/$system` does not exist, stop and say so: nothing can run without the code, so the fix is `/code-modernization:modernize $system --source <path to the code>`. Run every subagent in the foreground and wait for its result: never end your turn while one is still running.
+The code is `legacy/$system`, often a symlink to where it really lives: say where it points (`readlink legacy/$system`) in one line before you start. If `legacy/$system` does not exist, stop and say so: nothing can run without the code, so the fix is `/nvi-code-modernization:nvi-modernize $system --source <path to the code>`. Run every subagent in the foreground and wait for its result: never end your turn while one is still running.
 
 ## Start from what already exists
 
@@ -188,4 +188,4 @@ Refresh the report: `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/build_report.py" $sy
 (a convenience: if it fails or `python3` is missing, say so in one line and carry on). Tell the user to open
 `analysis/$system/TOPOLOGY.html` and try: search a module, click it for its
 connections and description, pick a persona flow. The next step is
-`/code-modernization:modernize-extract-rules $system`.
+`/nvi-code-modernization:nvi-modernize-extract-rules $system`.

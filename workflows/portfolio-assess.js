@@ -1,9 +1,9 @@
 export const meta = {
-  name: 'modernize-portfolio-assess',
+  name: 'nvi-modernize-portfolio-assess',
   description:
     'Per-system portfolio sweep as an independent pipeline — metrics, fingerprint, doc coverage per system; COCOMO computed deterministically',
   whenToUse:
-    'Invoked by /code-modernization:modernize-assess --portfolio when the Workflow tool is available. Requires args {parentDir, systems: ["dirname", ...]} — the calling session enumerates the subdirectories (workflow scripts have no filesystem access) and renders analysis/portfolio.html from the returned rows.',
+    'Invoked by /nvi-code-modernization:nvi-modernize-assess --portfolio when the Workflow tool is available. Requires args {parentDir, systems: ["dirname", ...]} — the calling session enumerates the subdirectories (workflow scripts have no filesystem access) and renders analysis/portfolio.html from the returned rows.',
   phases: [{ title: 'Survey', detail: 'one metrics agent per system, all independent' }],
 }
 
@@ -17,7 +17,7 @@ const parentDir = ARGS && ARGS.parentDir
 const systems = ARGS && ARGS.systems
 if (!parentDir || !Array.isArray(systems) || systems.length === 0) {
   throw new Error(
-    'modernize-portfolio-assess workflow requires args: {parentDir: "<path>", systems: ["subdir", ...]} — enumerate the subdirectories before invoking',
+    'nvi-modernize-portfolio-assess workflow requires args: {parentDir: "<path>", systems: ["subdir", ...]} — enumerate the subdirectories before invoking',
   )
 }
 // These land in paths inside agent prompts — reject traversal and
@@ -73,7 +73,7 @@ const rows = await pipeline(
 5. 1-3 risk notes: the things that would most complicate modernizing this system.
 ${UNTRUSTED}`,
       {
-        agentType: 'code-modernization:legacy-analyst',
+        agentType: 'nvi-code-modernization:legacy-analyst',
         label: `survey:${sys}`,
         phase: 'Survey',
         schema: SYSTEM_SCHEMA,

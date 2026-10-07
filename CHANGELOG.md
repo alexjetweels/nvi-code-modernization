@@ -1,6 +1,20 @@
 # Changelog
 
-Each release gets a new number in `.claude-plugin/plugin.json`; Claude Code only offers an update when that number changes.
+Each release gets the same version in `plugin.json` and `.claude-plugin/plugin.json`.
+
+## 2.0.0
+
+- Added repository marketplaces for Claude Code and Codex so the plugin can be installed from a Git repository without running the workspace installer.
+- Renamed the plugin and skill to `nvi-code-modernization`, and renamed user-facing commands to the `nvi-modernize` prefix. Existing installations under the previous identity need to be removed separately.
+- Kept the workspace installer as an optional local setup helper.
+
+## 1.1.0
+
+- Added a portable Agent Plugins manifest and skill, a Copilot CLI command, and workspace shims for Antigravity and Copilot in VS Code.
+- Added `scripts/install.py` to copy a versioned plugin into a migration workspace separate from the legacy source and prepare each host's local configuration.
+- Added host-specific next-command text to the HTML report while keeping Claude's command names as the default.
+- Added SHA-256 source snapshots to preflight and verification; existing workspaces without a snapshot retain the previous modification-time check.
+- Fixed Claude manifest and command frontmatter issues found by `claude plugin validate`.
 
 ## 1.0.0
 

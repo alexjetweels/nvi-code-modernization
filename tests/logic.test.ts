@@ -668,7 +668,7 @@ describe('estate', () => {
       proofs: new Map([['intcalc', { state: 'proven', verdict: 'PROVEN', reason: '' }]]),
       topology,
       byNode: new Map([['INTCALC', { state: 'reviewed', dir: 'INTCALC' }]]),
-      next: { text: '/x:modernize-transform billing ACCTUPD java', isByHand: false, reason: '' },
+      next: { text: '/x:nvi-modernize-transform billing ACCTUPD java', isByHand: false, reason: '' },
     } as never
 
     const tiles = tilesOf(snapshot, 40, 8)

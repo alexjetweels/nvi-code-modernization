@@ -529,37 +529,49 @@ def load_mermaid(src):
         return ""
 
 
-def next_step(system, done, glance):
+HOSTS = ("claude", "codex", "copilot-cli", "copilot-vscode", "antigravity")
+
+
+def next_step(system, done, glance, host="claude"):
     """The one command to run next, from which artifacts exist. The status command decides it the same way and also
     reads the brief's phases; this page only knows what is on disk."""
     def go(command, why):
-        return {"command": "/code-modernization:%s %s" % (command, system), "why": why}
+        stage = command[len("nvi-modernize-"):] if command.startswith("nvi-modernize-") else command
+        if host == "claude":
+            call = "/nvi-code-modernization:%s %s" % (command, system)
+        elif host == "codex":
+            call = "$nvi-code-modernization %s %s" % (stage, system)
+        elif host in ("copilot-cli", "copilot-vscode", "antigravity"):
+            call = "/nvi-modernize %s %s" % (stage, system)
+        else:
+            raise ValueError("unknown report host: %s" % host)
+        return {"command": call, "why": why}
     if not done["preflight"]:
-        return go("modernize-preflight", "checks the environment and records where the code lives")
+        return go("nvi-modernize-preflight", "checks the environment and records where the code lives")
     if not done["assess"]:
-        return go("modernize-assess", "says what you are dealing with and recommends a pattern")
+        return go("nvi-modernize-assess", "says what you are dealing with and recommends a pattern")
     if not done["map"]:
-        return go("modernize-map", "draws the structure of the system")
+        return go("nvi-modernize-map", "draws the structure of the system")
     if not done["rules"]:
-        return go("modernize-extract-rules", "mines the business rules, each with a citation")
+        return go("nvi-modernize-extract-rules", "mines the business rules, each with a citation")
     rules = glance.get("rules") or {}
     if not done["brief"] and rules.get("defects") and not rules.get("reviews"):
-        return go("modernize-review", "a person confirms or corrects the rules that look wrong")
+        return go("nvi-modernize-review", "a person confirms or corrects the rules that look wrong")
     if not done["brief"]:
-        return go("modernize-brief", "writes the plan a person approves")
+        return go("nvi-modernize-brief", "writes the plan a person approves")
     if not done["build"]:
-        return go("modernize-status", "names the first build command from the approved plan")
+        return go("nvi-modernize-status", "names the first build command from the approved plan")
     proof = glance.get("proof")
     if not proof:
-        return go("modernize-verify", "re-checks what was built and gives each module a verdict")
+        return go("nvi-modernize-verify", "re-checks what was built and gives each module a verdict")
     if proof.get("verdict") != "PROVEN":
-        return go("modernize-verify", "the last check was %s: fix what its reasons name, then run it again" % str(proof.get("verdict"))[:20])
+        return go("nvi-modernize-verify", "the last check was %s: fix what its reasons name, then run it again" % str(proof.get("verdict"))[:20])
     if not done["harden"]:
-        return go("modernize-harden", "scans the legacy system for security problems")
-    return go("modernize-status", "says whether modules or phases are left")
+        return go("nvi-modernize-harden", "scans the legacy system for security problems")
+    return go("nvi-modernize-status", "says whether modules or phases are left")
 
 
-def build(system, workspace, out=None):
+def build(system, workspace, out=None, host="claude"):
     """-> (html, section count, output path), or None when nothing was found."""
     src = Source(workspace, system)
     out = os.path.abspath(out or os.path.join(src.adir, "REPORT.html"))
@@ -638,7 +650,7 @@ def build(system, workspace, out=None):
     done = {"preflight": "PREFLIGHT.md" in docs, "assess": "ASSESSMENT.md" in docs, "rules": "BUSINESS_RULES.md" in docs, "brief": "MODERNIZATION_BRIEF.md" in docs,
             "map": topo is not None or has_map or any(f["name"] != "ARCHITECTURE.mmd" for f in figures), "build": any(nonempty_dir(p) for p in mods), "harden": "SECURITY_FINDINGS.md" in docs}
     glance["steps"] = [{"key": k, "label": label, "done": bool(done[k])} for k, label in STEPS]
-    glance["next"] = next_step(system, done, glance)
+    glance["next"] = next_step(system, done, glance, host)
     tracks = {"rewrite": [mods[0]], "same-stack uplift": [a("DELTA_CATALOG.md"), a("PLAYBOOK.md"), mods[1]], "reimagine": [a("AI_NATIVE_SPEC.md"), a("REIMAGINED_ARCHITECTURE.md"), mods[2]]}
     ranked = sorted(((newest(p), k) for k, p in tracks.items() if newest(p)), reverse=True)
     glance["track"] = {"label": ranked[0][1], "why": "newest artifact: " + os.path.relpath(ranked[0][0][1], workspace).replace(os.sep, "/")} if ranked else None
@@ -697,12 +709,13 @@ def main(argv=None):
     ap.add_argument("system", help="the system's folder name under analysis/")
     ap.add_argument("--workspace", default=".", help="the project root holding analysis/ and modernized/ (default: current folder)")
     ap.add_argument("--out", help="where to write the report (default: <workspace>/analysis/<system>/REPORT.html)")
+    ap.add_argument("--host", choices=HOSTS, default="claude", help="host whose next-command syntax appears in the report")
     args = ap.parse_args(argv)
     if not args.system or args.system in (".", "..") or re.search(r"[\\/\x00]", args.system):
         print("build_report.py: the system must be a folder name under analysis/, not a path", file=sys.stderr)
         return 2
     try:
-        result = build(args.system, args.workspace, args.out)
+        result = build(args.system, args.workspace, args.out, args.host)
     except OSError as err:
         print("build_report.py: %s" % err, file=sys.stderr)
         return 1

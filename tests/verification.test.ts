@@ -8,7 +8,7 @@ import { MAVEN_UPLIFT, memoryFs } from './fixtures/stacks'
 import { elementsOf, rowsOf, stringsOf, textOf, worldOf } from './fixtures/world'
 import { FULL } from './fixtures/workspace'
 
-const PREFIX = '/p:modernize-'
+const PREFIX = '/p:nvi-modernize-'
 const NOTES = 'modernized/billing/INTCALC/TRANSFORMATION_NOTES.md'
 const REPORT = 'modernized/billing/INTCALC/target/surefire-reports/TEST-InterestTest.xml'
 const STAMP = '2026-09-24 20:31 UTC'

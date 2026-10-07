@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Usage counts for the code-modernization plugin. Whole numbers only, never text.
+"""Usage counts for the nvi-code-modernization plugin. Whole numbers only, never text.
 
     telemetry.py command                 UserPromptSubmit hook: which of the plugin's commands was typed, and on what kind of machine
     telemetry.py state                   Stop hook: how far the newest system under analysis/ has got
@@ -82,7 +82,7 @@ API_ERRORS = [
     (4, re.compile(r"invalid.?request|\b400\b|unrecognized_model|not_found", re.I)),
 ]
 ERROR_CODES = [(UnicodeError, 8), (KeyError, 1), (ValueError, 2), (OSError, 3), (TypeError, 4), (AttributeError, 5), (RecursionError, 6), (MemoryError, 7)]
-COMMAND_RE = re.compile(r"^/(?P<ns>code-modernization:)?modernize(?:-(?P<verb>[a-z][a-z-]*))?(?=\s|$)")
+COMMAND_RE = re.compile(r"^/(?P<ns>nvi-code-modernization:)?nvi-modernize(?:-(?P<verb>[a-z][a-z-]*))?(?=\s|$)")
 
 GOALS = {"understand": 1, "uplift": 2, "transform": 3, "reimagine": 4}
 GOAL_LABEL = re.compile(r"(?i)^goal\b\s*[:\u2013\u2014]?\s*(.*)$")
@@ -431,7 +431,7 @@ def command_metrics(prompt, cwd, permission_mode=None):
     elif verb in COMMANDS:
         cmd = COMMANDS[verb]
     else:
-        return None  # another tool's /modernize-something
+        return None  # another tool's /nvi-modernize-something
     words = str(prompt).lstrip()[m.end():].split()
     systems = systems_in(cwd)
     named = system_word(words)
@@ -473,7 +473,7 @@ def tool_code(name):
 def failure_kind(text):
     """A code for what went wrong, decided from the failure's own text (which is never sent), or None when it says nothing useful."""
     text = str(text or "")[:8000]
-    if "Traceback" in text and ("code-modernization" in text or "scripts/" in text or "scripts\\" in text):
+    if "Traceback" in text and ("nvi-code-modernization" in text or "scripts/" in text or "scripts\\" in text):
         return 5
     for code, pattern in FAILURE_KINDS:
         if pattern.search(text):
@@ -535,7 +535,7 @@ def data_dir():
     """The plugin's own data folder, or a private folder in the temp directory; None when neither can be used safely."""
     uid = getattr(os, "getuid", lambda: 0)()
     base = os.environ.get("CLAUDE_PLUGIN_DATA") or ""
-    base = os.path.realpath(base) if os.path.isdir(base) else os.path.join(tempfile.gettempdir(), "code-modernization-%s" % uid)
+    base = os.path.realpath(base) if os.path.isdir(base) else os.path.join(tempfile.gettempdir(), "nvi-code-modernization-%s" % uid)
     try:
         os.makedirs(base, mode=0o700, exist_ok=True)
         st = os.lstat(base)
@@ -667,7 +667,7 @@ def show(args):
         i += 1
     cwd = cwd or os.getcwd()
     example = prompt is None
-    prompt = "/code-modernization:modernize-status" if example else prompt
+    prompt = "/nvi-code-modernization:nvi-modernize-status" if example else prompt
     state, command = state_metrics(cwd), command_metrics(prompt, cwd)
     if as_json:
         print(json.dumps({"off": off_reason(), "state": ok(state) if state else None, "command": ok(command) if command else None}))

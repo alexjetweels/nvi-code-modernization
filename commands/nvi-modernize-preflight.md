@@ -19,6 +19,9 @@ readiness report, not the first error.
 The code is `legacy/$system`: a copy, or a symlink to where it really lives (how a large repository stays
 put). Nothing is ever copied for you.
 
+- If no `--source` was given and a physical top-level `$system/` folder exists, run
+  `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/prepare_project.py" $system --workspace .` first. This prepares a
+  bundled project without copying its legacy source. On Windows, use `python` or `py -3` if `python3` is unavailable.
 - If `$ARGUMENTS` contains `--source <path>` (a directory, absolute or relative), check that it exists and is
   not the filesystem root or the user's home directory, then, only if `legacy/$system` does not exist yet, create
   the link: `mkdir -p legacy && ln -s <absolute path> legacy/$system` (on Windows a junction: `cmd /c mklink /J
@@ -28,7 +31,13 @@ put). Nothing is ever copied for you.
   before you start.
 - If `$target_stack` starts with `--`, it is a flag, not a stack.
 
-Never modify anything under `legacy/$system`.
+Never modify anything under `legacy/$system` or its real target.
+
+Before any smoke build, run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/source_guard.py" snapshot $system --workspace .`.
+This records hashes of the source files without executing them. If an existing snapshot is present, the command verifies
+it and refuses to replace a changed baseline. If it cannot finish, record the reason in `PREFLIGHT.md`, do not run a
+legacy build, and do not describe source preservation as verified. Run the smoke build in a disposable copy if it may
+write into the legacy tree.
 
 ## Check 0 — Ask the human (these answers are not in the source)
 
@@ -219,4 +228,4 @@ command:
   not migrate a shared node in place without one.
 
 Print the table in the session too. End with the single most important fix if
-anything is red, and the next step: `/code-modernization:modernize-assess $system`.
+anything is red, and the next step: `/nvi-code-modernization:nvi-modernize-assess $system`.

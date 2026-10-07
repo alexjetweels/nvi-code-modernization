@@ -2,7 +2,7 @@ import { plain } from '../text'
 import type { ReviewLedger, ReviewVerdict } from '../reader/progress'
 
 /**
- * `RULE_REVIEWS.json`, read without trusting it. Two writers keep it: this deck, and the `modernize-review` command
+ * `RULE_REVIEWS.json`, read without trusting it. Two writers keep it: this deck, and the `nvi-modernize-review` command
  * for people who work without the pane. Each entry is `{ verdict, at, title?, note? }`, the note being the reviewer's
  * own words. The file sits in a workspace anyone may have edited, and a model may have written it, so every value is
  * checked: a verdict is one of three exact words, a rule id is one plain token, a title or a note is cut to one short

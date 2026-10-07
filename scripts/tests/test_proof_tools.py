@@ -1,6 +1,6 @@
 """Tests for scripts/trace_rules.py, baseline_diff.py, proof_pack.py and the Proof section of the report.
 
-Run:  python3 -m unittest discover -s plugins/code-modernization/scripts/tests
+Run:  python3 -m unittest discover -s plugins/nvi-code-modernization/scripts/tests
 Every input here stands in for untrusted text from a legacy code base, so the hostile cases matter as much as the good ones.
 """
 import contextlib
@@ -454,7 +454,7 @@ class BaselineDiff(unittest.TestCase):
 BRIEF_MD = """# Brief
 
 #### Phase 1 - Pilot
-Command: /code-modernization:modernize-transform
+Command: /nvi-code-modernization:nvi-modernize-transform
 Modules: mod, extra
 Exit criteria:
 - [x] All P0 rules pass
@@ -462,7 +462,7 @@ Exit criteria:
 - [ ] Row counts match
 
 #### Phase 2 - Later
-Command: /code-modernization:modernize-transform
+Command: /nvi-code-modernization:nvi-modernize-transform
 Modules: other
 Exit criteria:
 - [ ] Phase 2 only criterion
@@ -1024,7 +1024,8 @@ class BaselineEvidence(unittest.TestCase):
         self.per_test = json.dumps({"A#pass1": "PASS", "A#pass2": "PASS", "A#failed": "FAIL", "A#skipped": "SKIP", "B#flip": "PASS", "B#gone": "PASS"})
 
     def found(self, text=""):
-        return [os.path.relpath(p, os.path.join(self.root, "analysis", "s")) for p in bd.evidence_paths(self.base, BASELINE_MD + text)]
+        return [os.path.relpath(p, os.path.join(self.root, "analysis", "s")).replace(os.sep, "/")
+                for p in bd.evidence_paths(self.base, BASELINE_MD + text)]
 
     def test_per_test_json_shapes_are_read_and_counts_or_prose_are_not(self):
         self.assertEqual(bd.parse_results_json({"A#x": "PASS", "A#y": "failed", "A#z": "Skipped"}), {"A#x": "PASS", "A#y": "FAIL", "A#z": "SKIP"})
@@ -1216,6 +1217,7 @@ class UpliftChecks(unittest.TestCase):
         self.assertEqual((got["counts"]["changed"], len(got["changed"])), (300, 40))              # the count is complete, the list is cut
         self.assertNotRegex(json.dumps(uc.tests_changed(self.old, self.new)), "\x1b")
 
+    @unittest.skipIf(os.name == "nt", "Windows forbids escape characters and newlines in file names")
     def test_a_hostile_file_name_is_cleaned(self):
         self.both("t/ev\x1b[31mil\nTest.java", "a", "b")
         got = uc.tests_changed(self.old, self.new)

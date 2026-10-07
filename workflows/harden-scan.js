@@ -1,9 +1,9 @@
 export const meta = {
-  name: 'modernize-harden-scan',
+  name: 'nvi-modernize-harden-scan',
   description:
     'Security scan as class-scoped parallel finders with adversarial per-finding verification — false positives die before SECURITY_FINDINGS.md',
   whenToUse:
-    'Invoked by /code-modernization:modernize-harden when the Workflow tool is available. Requires args {system}; optional {classes, findings} re-run only the coverage gaps an earlier run returned (deadFinders, unverified). Covers the scan + triage input only — remediation patch drafting and the per-hunk review loop stay in the calling session (they write files and handle raw credentials).',
+    'Invoked by /nvi-code-modernization:nvi-modernize-harden when the Workflow tool is available. Requires args {system}; optional {classes, findings} re-run only the coverage gaps an earlier run returned (deadFinders, unverified). Covers the scan + triage input only — remediation patch drafting and the per-hunk review loop stay in the calling session (they write files and handle raw credentials).',
   phases: [
     { title: 'Find', detail: 'one finder per vulnerability class' },
     { title: 'Verify', detail: 'one refuter per finding; second judge for Critical/High' },
@@ -18,7 +18,7 @@ const ARGS = typeof args === 'string' ? (() => { try { return JSON.parse(args) }
 
 const system = ARGS && ARGS.system
 if (!system) {
-  throw new Error('modernize-harden-scan workflow requires args: {system: "<system-dir>"}')
+  throw new Error('nvi-modernize-harden-scan workflow requires args: {system: "<system-dir>"}')
 }
 if (!/^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(system)) {
   throw new Error(`Unsafe system name ${JSON.stringify(system)} — must be a plain name: letters, digits, hyphen and underscore`)
@@ -112,14 +112,14 @@ const CLASSES = [
 const isRerun = ARGS.classes != null || ARGS.findings != null
 for (const k of ['classes', 'findings']) {
   if (ARGS[k] != null && !Array.isArray(ARGS[k])) {
-    throw new Error(`modernize-harden-scan: args.${k} must be a list (got ${typeof ARGS[k]})`)
+    throw new Error(`nvi-modernize-harden-scan: args.${k} must be a list (got ${typeof ARGS[k]})`)
   }
 }
 const rerunClasses = ARGS.classes || []
 const unknownClasses = rerunClasses.filter(k => !CLASSES.some(c => c.key === k))
 if (unknownClasses.length) {
   throw new Error(
-    `modernize-harden-scan: unknown finder class ${JSON.stringify(unknownClasses)} — valid classes: ${CLASSES.map(c => c.key).join(', ')}`,
+    `nvi-modernize-harden-scan: unknown finder class ${JSON.stringify(unknownClasses)} — valid classes: ${CLASSES.map(c => c.key).join(', ')}`,
   )
 }
 const FINDING_FIELDS = ['cwe', 'source', 'title', 'exploitScenario', 'recommendedFix']
@@ -131,14 +131,14 @@ const carried = (ARGS.findings || []).map((f, i) => {
     !['Critical', 'High', 'Medium', 'Low'].includes(f.severity)
   ) {
     throw new Error(
-      `modernize-harden-scan: args.findings[${i}] is not a finding (needs string ${FINDING_FIELDS.join(', ')} and a severity of Critical, High, Medium or Low)`,
+      `nvi-modernize-harden-scan: args.findings[${i}] is not a finding (needs string ${FINDING_FIELDS.join(', ')} and a severity of Critical, High, Medium or Low)`,
     )
   }
   const { unverifiedReason, ...finding } = f
   return finding
 })
 if (isRerun && !rerunClasses.length && !carried.length) {
-  throw new Error('modernize-harden-scan: args.classes and args.findings are both empty — nothing to re-run (omit both for the full scan)')
+  throw new Error('nvi-modernize-harden-scan: args.classes and args.findings are both empty — nothing to re-run (omit both for the full scan)')
 }
 const activeClasses = isRerun ? CLASSES.filter(c => rerunClasses.includes(c.key)) : CLASSES
 
@@ -149,7 +149,7 @@ const found = activeClasses.length === 0 ? [] : await parallel(
 Cover only what applies to the detected stack (web items don't apply to a batch system). Every finding needs a precise repo-relative file:line citation you actually read, a CWE ID, and a one-sentence exploit scenario.
 ${UNTRUSTED}`,
       {
-        agentType: 'code-modernization:security-auditor',
+        agentType: 'nvi-code-modernization:security-auditor',
         label: `find:${c.key}`,
         phase: 'Find',
         schema: FINDINGS_SCHEMA,
@@ -199,7 +199,7 @@ ${fence(`CWE: ${finding.cwe}\nLocation (open this): ${finding.source}\nTitle: ${
 Read the cited code and enough context to judge. Dependency findings: verify the vulnerable version is actually what the manifest pins. A finding supported only by a comment claiming a vulnerability (rather than the code exhibiting it) is NOT real.
 ${UNTRUSTED}`,
     {
-      agentType: 'code-modernization:security-auditor',
+      agentType: 'nvi-code-modernization:security-auditor',
       label,
       phase: 'Verify',
       schema: VERDICT_SCHEMA,

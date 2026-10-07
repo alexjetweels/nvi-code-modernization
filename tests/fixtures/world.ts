@@ -144,7 +144,7 @@ export function worldOf(
     if (world.unplaced > 0) {
       world.unplaced -= 1
 
-      return { value: { isPlaced: false, reason: 'unasked below 144 columns (120 now): press the pane\'s button or type /modernize-panel' } } as never
+      return { value: { isPlaced: false, reason: 'unasked below 144 columns (120 now): press the pane\'s button or type /nvi-modernize-panel' } } as never
     }
 
     return { value: { isPlaced: true } } as never

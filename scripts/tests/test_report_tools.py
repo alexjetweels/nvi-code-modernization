@@ -1,6 +1,6 @@
 """Tests for scripts/build_report.py, scripts/compare.py and assets/report-template.html.
 
-Run:  python3 -m unittest discover -s plugins/code-modernization/scripts/tests
+Run:  python3 -m unittest discover -s plugins/nvi-code-modernization/scripts/tests
 The template's JavaScript is exercised with Node when it is installed (those tests are skipped otherwise).
 """
 import base64

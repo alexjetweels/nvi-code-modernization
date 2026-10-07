@@ -38,7 +38,7 @@ attention, and what Claude is doing right now (**Session**).
   A tile lights up for a few seconds when Claude or one of its agents reads it (blue) or writes to it (yellow), so a fan-out
   is something you watch move across the system.
 - **Any language.** The pane reads no language of its own. The map comes from `topology.json` once
-  `/code-modernization:modernize-map` has run. Until then it is read off the legacy tree: one tile per build module where the
+  `/nvi-code-modernization:nvi-modernize-map` has run. Until then it is read off the legacy tree: one tile per build module where the
   tree has build files (Maven, Gradle, npm, .NET projects, Go, Cargo, Python packages, Composer and more), one per source
   file for a tree without them, one per directory for a tree too big for that. The header names the languages by their
   share of the code and how many units it found.
@@ -57,7 +57,7 @@ attention, and what Claude is doing right now (**Session**).
 - **Any test runner.** A module's tests come from the reports it left (JUnit XML in the usual places, Visual Studio `.trx`, or
   `.modernize/test-report.json`) and, where a runner leaves none, from a test command run in the module's directory during
   the session (Maven, Gradle, pytest, Jest, dotnet, go, cargo, rspec, phpunit and more).
-- **A verdict on every built module.** Once `/code-modernization:modernize-verify` has run, each built module carries one chip
+- **A verdict on every built module.** Once `/nvi-code-modernization:nvi-modernize-verify` has run, each built module carries one chip
   in the module list and one mark on its tile: `PROVEN`, `PARTLY PROVEN` or `NOT PROVEN`, as
   `analysis/<system>/VERIFICATION.json` says. A module that is built and that nothing has checked reads `not verified yet`;
   one whose notes or test reports changed after its check reads `changed since verified`. The next step is the verify command
@@ -66,7 +66,7 @@ attention, and what Claude is doing right now (**Session**).
   ignored. An uplift has one verdict, for the whole upgrade.
 - **Next.** One command, with the reason it comes next, and a **put in prompt** button that types it into the prompt box for
   you. It never runs it: a person presses Enter. In a workspace nobody has started, the next step is the front door,
-  `/code-modernization:modernize <name>`, which asks what you want to do and gives the first step; while the brief is unsigned it is a
+  `/nvi-code-modernization:nvi-modernize <name>`, which asks what you want to do and gives the first step; while the brief is unsigned it is a
   **sign the brief** button.
 - **Colours for a light or a dark terminal.** Text is drawn in Claude Code's own theme colours, which follow your theme, and
   the map's tiles are mid-tones that show on either background.
@@ -82,8 +82,8 @@ because the terminal is narrower than 144 columns), one row above the prompt say
 
 *The rules and the prompt mark around the bar are drawn for the picture; the bar is the pane's.*
 
-`/modernize-panel` does the same from the keyboard, and shows the pane for a legacy tree nothing has analysed yet. In a
-workspace with nothing to show the pane says so and names the one command to type, `/code-modernization:modernize`. Set
+`/nvi-modernize-panel` does the same from the keyboard, and shows the pane for a legacy tree nothing has analysed yet. In a
+workspace with nothing to show the pane says so and names the one command to type, `/nvi-code-modernization:nvi-modernize`. Set
 `panel` to `command` to have the pane open only on request, or `off` for no pane and no bar.
 
 ## X-ray reads
@@ -107,14 +107,14 @@ the workspace root is told where the file is under the legacy root. The pane lis
 
 *The reviewer's note and the verdicts on this card are samples typed for the picture.*
 
-`/modernize-review-pane [flagged|p0|all] [filter]` pages through rule cards in the band above the prompt: the rule, its citation,
+`/nvi-modernize-review-pane [flagged|p0|all] [filter]` pages through rule cards in the band above the prompt: the rule, its citation,
 Given / When / Then, the suspected defect, the question for an SME, and, once a rule has a verdict, the verdict and the
 reviewer's note. From an empty prompt: `1` confirms, `2` marks the rule wrong, `3` sends it to discussion, `4` goes back,
 `5` skips, `6` shows the cited legacy lines, `7` takes a verdict back and `0` closes the deck.
 
 Verdicts go to `analysis/<system>/RULE_REVIEWS.json` and a readable `RULE_REVIEWS.md` (`Rule | Verdict | When | Title |
 Note`); the agent-written `BUSINESS_RULES.md` is never edited. **The plugin's own command
-`/code-modernization:modernize-review <system> [flagged|p0|all]` writes the same two files** for people without the pane: it
+`/nvi-code-modernization:nvi-modernize-review <system> [flagged|p0|all]` writes the same two files** for people without the pane: it
 asks the same questions in pop-ups and can keep a reviewer's own words as a `note`. The deck shows the note on the card, keeps
 it when it records a new verdict, and reads the file again before it writes, so what the command recorded meanwhile is not
 lost. A rule marked wrong is not used as a test oracle, and a high-priority rule under discussion stops the build commands
@@ -126,7 +126,7 @@ until it is settled; the pane lists both under **Attention**, and later x-ray no
 
 *The approver's name is a sample typed for the picture.*
 
-`/modernize-sign [name, role]`, or the **sign the brief** button, fills in the brief's approval block: who, when, and whether
+`/nvi-modernize-sign [name, role]`, or the **sign the brief** button, fills in the brief's approval block: who, when, and whether
 it covers Phase 1 or the full plan. It changes nothing else in the file.
 
 ## A fleet view
@@ -160,9 +160,9 @@ seconds while idle.
 
 | | |
 |---|---|
-| `/modernize-panel [open\|close\|json]` | Show or hide the pane (the same switch as its **hide** and **show pane** buttons); `json` prints the reading it draws from. |
-| `/modernize-review-pane [flagged\|p0\|all] [filter]` | The review deck. `flagged` (default) is the P0 rules with a defect, an SME note or less than High confidence. The filter matches an id, a domain, a title or a cited file. Not the same as `/code-modernization:modernize-review`, the plugin command that asks in pop-ups and works without the pane. |
-| `/modernize-sign [name, role]` | Sign the brief's approval block. |
+| `/nvi-modernize-panel [open\|close\|json]` | Show or hide the pane (the same switch as its **hide** and **show pane** buttons); `json` prints the reading it draws from. |
+| `/nvi-modernize-review-pane [flagged\|p0\|all] [filter]` | The review deck. `flagged` (default) is the P0 rules with a defect, an SME note or less than High confidence. The filter matches an id, a domain, a title or a cited file. Not the same as `/nvi-code-modernization:nvi-modernize-review`, the plugin command that asks in pop-ups and works without the pane. |
+| `/nvi-modernize-sign [name, role]` | Sign the brief's approval block. |
 
 ## Pane options
 
@@ -172,9 +172,9 @@ Set in `/config`, or under `pluginConfigs` in settings.
 |---|---|---|
 | `system` | first under `analysis/`, else under `legacy/` | The system to follow (a name of letters, digits, `-` and `_`). |
 | `track` | `auto` | `auto` follows whichever way the commands are working on the system; `transform`, `uplift` or `reimagine` pins one. |
-| `panel` | `auto` | `auto` opens the pane by itself and draws the show bar while it is hidden; `command` opens it only when the button or `/modernize-panel` asks; `off` neither opens it nor draws the bar. |
+| `panel` | `auto` | `auto` opens the pane by itself and draws the show bar while it is hidden; `command` opens it only when the button or `/nvi-modernize-panel` asks; `off` neither opens it nor draws the bar. |
 | `xray` | on | Attach analysis context to legacy reads. |
-| `commandPrefix` | `/code-modernization:modernize-` | How the pane writes the plugin's commands. |
+| `commandPrefix` | `/nvi-code-modernization:nvi-modernize-` | How the pane writes the plugin's commands. |
 | `legacyDir` | `legacy` | The read-only tree. |
 
 ## Pane keys

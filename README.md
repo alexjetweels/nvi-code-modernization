@@ -1,31 +1,51 @@
-# Code Modernization
+# NVI Code Modernization
 
-Point Claude at a legacy codebase and get four things: an understanding of what it is and what it does, a plan you approve, the modernized code, and **proof that the new code behaves like the old**. It works with any language and any kind of move: a newer version of the same technology, a rewrite in another one, or a rebuild on a new architecture.
+Point a coding agent at a legacy codebase and get four things: an understanding of what it is and what it does, a plan you approve, the modernized code, and **proof that the new code behaves like the old**. The Claude Code commands are the original full-featured implementation. The portable skill also exposes the process to Codex, GitHub Copilot and Antigravity, with host-specific interaction and execution limits.
 
 ![One report page with everything found so far: a green banner when the proof passes and the old and new outputs match, the command to run next, the steps done, and the counts, with tabs for the assessment, the map, the business rules, the plan, the build notes and the proof.](assets/media/report-glance.jpg)
 
 ## Install
 
-You need [Claude Code](https://code.claude.com). Then:
+Publish **this plugin repository** to GitHub, separate from any customer's legacy source. Replace `<owner>/<repo>` below with its GitHub `owner/repo` path. The repository already contains both marketplace catalogs, so users do not run `scripts/install.py` or copy the plugin into each migration workspace.
 
+**Claude Code:** add the repository as a marketplace, then install the plugin from `nvi-plugins`. These commands work in a Claude Code session; the plugin interface offers the same marketplace and install flow.
+
+```text
+/plugin marketplace add <owner>/<repo>
+/plugin install nvi-code-modernization@nvi-plugins
 ```
-/plugin install code-modernization@claude-plugins-official
+
+**Codex CLI:** register the same GitHub repository, then install the plugin:
+
+```sh
+codex plugin marketplace add <owner>/<repo>
+codex plugin add nvi-code-modernization@nvi-plugins
 ```
+
+For organization-wide availability in Codex and ChatGPT, a workspace admin can use **Admin → Plugins → Add → Import marketplace**, enter the repository URL as Source, and leave Path empty. Members then install it from the Plugins Directory. The catalogs live at the repository root.
+
+After installing, open a migration workspace and use `/nvi-code-modernization:nvi-modernize` in Claude Code or `$nvi-code-modernization` in Codex. Place the legacy source in that workspace or provide its local path when prompted. The workflow writes analysis to `analysis/<system>/` and generated application code to `modernized/`. Installing the plugin does not download a customer's legacy source.
+
+Keep the migration workspace outside the original legacy repository when you want the original tree untouched. Claude Code keeps its namespaced commands and optional live pane. Codex invokes `$nvi-code-modernization <stage> <system>`. The portable skill uses the same command procedures and Python evidence scripts, with host-specific instructions for interaction and execution. The HTML report remains the common view. Parallel execution and the Claude pane are not promised on other hosts.
+
+This release has a new plugin identity. If an older `code-modernization` plugin is installed, remove that installation separately after switching to `nvi-code-modernization`.
+
+At the start of preflight, the portable skill records a SHA-256 source snapshot. Re-running preflight verifies the original snapshot and refuses to replace it if the source changed. Verification compares current contents with that snapshot, including same-size edits and new files. Older workspaces without a snapshot retain the earlier modification-time check. The snapshot skips `.git` and does not follow links inside the legacy tree. Build or test legacy code in a disposable copy when it may write output into that tree.
 
 Some steps start many agents at once, so expect real usage on a large system (see *What to expect*). Start with one module or one unit as a pilot, not the whole estate.
 
 ## Start here
 
-Open a folder for the work and type `/code-modernization:modernize`. It asks what you want to do with your code (a couple of short questions), finds the code, writes your answers down once, shows the road ahead, and gives you the exact first command. Every later command reads what you said, so nothing is asked twice. **Not sure what you want?** Choose *Understand it first*: you get the assessment, the map, the business rules and a plan, and no code is rebuilt.
+Open a folder for the work and type `/nvi-code-modernization:nvi-modernize`. It asks what you want to do with your code (a couple of short questions), finds the code, writes your answers down once, shows the road ahead, and gives you the exact first command. Every later command reads what you said, so nothing is asked twice. **Not sure what you want?** Choose *Understand it first*: you get the assessment, the map, the business rules and a plan, and no code is rebuilt.
 
 To go step by step instead, point the first command at your code and follow the "next step" line each command ends with:
 
 ```
-/code-modernization:modernize-preflight <name> --source <path to your code>
-/code-modernization:modernize-status <name>       # where am I, and what is next: run it any time
+/nvi-code-modernization:nvi-modernize-preflight <name> --source <path to your code>
+/nvi-code-modernization:nvi-modernize-status <name>       # where am I, and what is next: run it any time
 ```
 
-`<name>` is a short label of your choice (letters, digits, `-`, `_`). `--source` makes a link at `legacy/<name>` and copies nothing, so a huge repository stays where it is. **Nothing edits your legacy source.** Commands write only to `analysis/<name>/` and `modernized/` (a build check writes build output where your build normally does), and each refreshes `analysis/<name>/REPORT.html`: one page, with everything found so far, that you can open or share. A few steps need someone who knows how the system is built and run, so bring an engineer for the first questions.
+`<name>` is a short label of your choice (letters, digits, `-`, `_`). `--source` makes a link at `legacy/<name>` and copies nothing, so a huge repository stays where it is. The migration commands are written to leave your legacy source alone, while a build check may write build output wherever that build normally does. Run such checks in a disposable copy when they would write into the source. Commands write analysis to `analysis/<name>/` and new code to `modernized/`, and each refreshes `analysis/<name>/REPORT.html`: one page, with everything found so far, that you can open or share. A few steps need someone who knows how the system is built and run, so bring an engineer for the first questions.
 
 ## The path
 
@@ -33,31 +53,31 @@ Each step stands alone, so you can stop and review after any of them.
 
 | Step | Command | What you get |
 | --- | --- | --- |
-| 0 | `modernize` | Say what you want. Writes `INTENT.md`; every later command reads it. |
-| 1 | `modernize-preflight <name> [target-stack] [--source <path>]` | Is the environment ready? Asks five questions only a person can answer (is this the whole system or a slice, can it build and test here, is there custom build tooling, has anyone tried before, is anything off limits), proves a build works on this code, and finds missing source. |
-| 2 | `modernize-assess <name>` | What am I dealing with: inventory, complexity, debt, security, and a recommended pattern. |
-| 3 | `modernize-map <name>` | The structure: dependencies, data flow, entry points and business flows, as an interactive map. |
-| 4 | `modernize-extract-rules <name>` | The business rules as testable Given/When/Then cards with `file:line` citations, each re-checked by a second agent. |
-| 4b | `modernize-review <name>` | A person confirms or corrects the rules that look wrong. Your answers reach the plan and the build. With the live pane on, `/modernize-review-pane` does the same one card at a time. |
-| 5 | `modernize-brief <name> [target-stack]` | The phased plan a steering committee approves. **Nothing is built until you approve it.** |
+| 0 | `nvi-modernize` | Say what you want. Writes `INTENT.md`; every later command reads it. |
+| 1 | `nvi-modernize-preflight <name> [target-stack] [--source <path>]` | Is the environment ready? Asks five questions only a person can answer (is this the whole system or a slice, can it build and test here, is there custom build tooling, has anyone tried before, is anything off limits), proves a build works on this code, and finds missing source. |
+| 2 | `nvi-modernize-assess <name>` | What am I dealing with: inventory, complexity, debt, security, and a recommended pattern. |
+| 3 | `nvi-modernize-map <name>` | The structure: dependencies, data flow, entry points and business flows, as an interactive map. |
+| 4 | `nvi-modernize-extract-rules <name>` | The business rules as testable Given/When/Then cards with `file:line` citations, each re-checked by a second agent. |
+| 4b | `nvi-modernize-review <name>` | A person confirms or corrects the rules that look wrong. Your answers reach the plan and the build. With the live pane on, `/nvi-modernize-review-pane` does the same one card at a time. |
+| 5 | `nvi-modernize-brief <name> [target-stack]` | The phased plan a steering committee approves. **Nothing is built until you approve it.** |
 | 6 | `uplift`, `transform` or `reimagine` | The build (see below). |
-| 7 | `modernize-verify <name>` | **The proof.** An independent re-check with one verdict per module. |
-| 8 | `modernize-harden <name>` | A security scan of the legacy system with a reviewed patch you apply yourself. |
+| 7 | `nvi-modernize-verify <name>` | **The proof.** An independent re-check with one verdict per module. |
+| 8 | `nvi-modernize-harden <name>` | A security scan of the legacy system with a reviewed patch you apply yourself. |
 
-`assess --portfolio <parent-dir>` surveys many systems and ranks them on one page. `modernize-status <name>` says where you are and gives the exact command to paste.
+`assess --portfolio <parent-dir>` surveys many systems and ranks them on one page. `nvi-modernize-status <name>` says where you are and gives the exact command to paste.
 
 **A person decides at six points**, and the plugin never decides them for you: the five preflight answers, the rules that look wrong (`review`), approving the brief, accepting any difference the proof finds, signing the proof, and applying the security patch.
 
 ## How it proves the result
 
-Modernization fails quietly: the new code passes the tests someone wrote, and differs on the inputs nobody thought of. So the proof is built from evidence a script can check, not from the model's opinion. `modernize-verify` runs after a build, ideally in a fresh session, and re-does the work instead of trusting the notes the build left behind:
+Modernization fails quietly: the new code passes the tests someone wrote, and differs on the inputs nobody thought of. So the proof is built from evidence a script can check, not from the model's opinion. `nvi-modernize-verify` runs after a build, ideally in a fresh session, and re-does the work instead of trusting the notes the build left behind:
 
 - **The tests, run again from clean.** Build output is deleted, the full suite runs, and the counts come from the runner's own result files or a saved log. A run that executed no tests, or skipped them, is a failure, and a count the command merely typed in does not count.
 - **Old and new on the same inputs.** Where the legacy code can run, both run on the same inputs and a script compares every byte. Only fields that must vary (timestamps, generated ids) are masked, floating-point output can be compared within a declared tolerance, and every masked field is listed in the result. A difference a person accepts is recorded with the reason.
 - **Inputs nobody used.** It invents at least ten new inputs (boundaries, empty, huge, unusual order, and malformed records when you asked for exact behavior, quirks included) and compares again, so a suite that only passes on the cases the model chose is caught.
 - **Tests that can fail.** A deliberate one-line break must turn tests red (the canary), and the comparison itself is checked by changing one byte of an output.
 - **Every critical rule is backed by a test that ran.** Each P0 business rule must be named by a test that executed and passed. A rule named only by a skipped or pending test is listed as "named, not run", and a test folder that holds no code of its own is listed as tooling and gets no verdict.
-- **The source is untouched**, checked by file times without running anything inside the analyzed tree.
+- **The source is untouched**, checked against a SHA-256 snapshot when one exists, or by file times for older workspaces, without running anything inside the analyzed tree.
 
 Each module gets one verdict, computed by `scripts/proof_pack.py` from those files with rules written into the output: **PROVEN**, **PARTLY PROVEN** (with what is missing) or **NOT PROVEN** (nothing ran, something differs, a test fails). If the old system cannot run where you work (a mainframe program, a system that only runs in production), the old behavior can only be checked against recorded outputs, and the best verdict is PARTLY PROVEN: the page says so plainly. Anything a person must decide (open questions, exit criteria, the sign-off) is listed as waiting for a person and is never ticked for you. Every verdict is computed again from current evidence each time; none is carried over from an earlier run.
 
@@ -67,9 +87,9 @@ Each module gets one verdict, computed by `scripts/proof_pack.py` from those fil
 
 | If you want | Run | What happens |
 | --- | --- | --- |
-| The same technology on a newer version (.NET Framework to .NET 8, Java 8 to 17, Spring Boot 2 to 3) | `modernize-uplift <name> [source-version] [target-version]` | Keeps your code and fixes only what the new version breaks, driven by a catalog of the breaking changes this code actually hits. One pilot unit first with its lessons written down, then batches. The proof is the same test suite run on both versions. |
-| A new technology, one module at a time, while the old system keeps running | `modernize-transform <name> [module] [target-stack]` | A plan you approve, tests that pin the old behavior, an idiomatic rewrite, and proof: old and new run on the same inputs and a script compares them. |
-| A rebuild on a new architecture | `modernize-reimagine <name> [target-vision]` | A spec mined from the code, an architecture that is reviewed and approved, then services scaffolded with executable acceptance tests. |
+| The same technology on a newer version (.NET Framework to .NET 8, Java 8 to 17, Spring Boot 2 to 3) | `nvi-modernize-uplift <name> [source-version] [target-version]` | Keeps your code and fixes only what the new version breaks, driven by a catalog of the breaking changes this code actually hits. One pilot unit first with its lessons written down, then batches. The proof is the same test suite run on both versions. |
+| A new technology, one module at a time, while the old system keeps running | `nvi-modernize-transform <name> [module] [target-stack]` | A plan you approve, tests that pin the old behavior, an idiomatic rewrite, and proof: old and new run on the same inputs and a script compares them. |
+| A rebuild on a new architecture | `nvi-modernize-reimagine <name> [target-vision]` | A spec mined from the code, an architecture that is reviewed and approved, then services scaffolded with executable acceptance tests. |
 
 A version move keeps your code, so it can skip `extract-rules` and `review`: `preflight`, `assess`, `uplift`, `verify` is a complete path, and `map` and `brief` add the unit order and an approved phased plan for a large system. If the delta catalog shows an "uplift" would rewrite most of the code, the command says so and points to `transform`. Rehost (move as is) and Replace (buy a product) change no code, so no build command applies; the analysis is still useful for both.
 
@@ -178,7 +198,7 @@ If python is missing, is the Windows Store placeholder, is too old or crashes, t
 | `err`, `err_at` | the plugin's own script raised: 1 KeyError, 2 ValueError, 3 OSError, 4 TypeError, 5 AttributeError, 6 RecursionError, 7 MemoryError, 8 UnicodeError, 99 other; and the line of `telemetry.py` where it raised |
 | `agents`, `wf_failed`, `wf_skip`, `wf_unver` | agents the last rule extraction started, modules or agents it lost, modules it skipped, rules it could not verify |
 
-To see exactly what would be sent for your workspace, before anything is sent, run `python3 scripts/telemetry.py show /path/to/workspace` from the plugin's folder (add `--prompt "/code-modernization:modernize-verify billing"` to see a command's counts).
+To see exactly what would be sent for your workspace, before anything is sent, run `python3 scripts/telemetry.py show /path/to/workspace` from the plugin's folder (add `--prompt "/nvi-code-modernization:nvi-modernize-verify billing"` to see a command's counts).
 
 To turn it off, use any one of these: the plugin's **Usage counts** option, `CODE_MODERNIZATION_TELEMETRY=0` in your environment (anything but an explicit `1` or `on` counts as off), or Claude Code's own `DISABLE_TELEMETRY=1` (or `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1`). Nothing is sent while any of them is set.
 
@@ -195,14 +215,14 @@ State lives in files, not in chat: later commands read the brief, the intent and
 | `PREFLIGHT.md` (the five answers, scope boundary, build checks) | whoever owns the build |
 | `ASSESSMENT.md`, `REPORT.html` | the engineering lead or sponsor |
 | `topology.json`, `TOPOLOGY.html` | engineers who know the system |
-| `BUSINESS_RULES.md` (then `modernize-review`) | a business expert per domain: start with the P0 rules and the closing question list |
+| `BUSINESS_RULES.md` (then `nvi-modernize-review`) | a business expert per domain: start with the P0 rules and the closing question list |
 | `MODERNIZATION_BRIEF.md` | the approver, who steers execution by editing it |
 | `VERIFICATION.md` | the approver and a second engineer, who sign it |
 | `SECURITY_FINDINGS.md` and the patch | a security engineer, who applies the patch |
 
 ## Live progress pane (early access)
 
-A pane beside the transcript that shows the map of your code, how far each part has got, each built module's proof verdict, and what to run next, in any language and for any of the three ways of building. It needs Claude Code's early-access function hooks: start with `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1 claude`. Without the flag nothing changes. Its three commands are typed bare: `/modernize-panel` shows or hides it, `/modernize-review-pane` reviews the flagged rule cards in it, and `/modernize-sign` fills in the plan's approval block. Details are in [hooks/README.md](hooks/README.md).
+A pane beside the transcript that shows the map of your code, how far each part has got, each built module's proof verdict, and what to run next, in any language and for any of the three ways of building. It needs Claude Code's early-access function hooks: start with `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1 claude`. Without the flag nothing changes. Its three commands are typed bare: `/nvi-modernize-panel` shows or hides it, `/nvi-modernize-review-pane` reviews the flagged rule cards in it, and `/nvi-modernize-sign` fills in the plan's approval block. Details are in [hooks/README.md](hooks/README.md).
 
 ![The live pane beside the transcript for a rewrite: the map with one module reviewed, the phases, a module marked proven, the next command, and two items that need attention.](assets/media/pane-rewrite.png)
 

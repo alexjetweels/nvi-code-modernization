@@ -1,6 +1,6 @@
 ---
 description: Start here — say what you want done with your code and get the plan and the first step
-argument-hint: [system] [--source <path>]
+argument-hint: "[system] [--source <path>]"
 arguments: system
 ---
 
@@ -10,14 +10,17 @@ little, explain in plain words, and always end on one exact command to run next.
 ## 1 — Find where things stand
 
 - If `$system` was given, use it. Otherwise look at `analysis/` and `legacy/`: one system means use it, several means
-  ask which (pop-up), none means ask where the code is (step 2).
+  ask which (pop-up). If neither identifies a system and no `--source` was given, run
+  `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/prepare_project.py" --workspace .`. Use its discovered folder name when
+  exactly one top-level legacy source exists. On Windows, use `python` or `py -3` if `python3` is unavailable.
+  If it finds none or several, ask which folder contains the legacy code.
 - If `analysis/$system/` already has files, this is a return visit: do what
-  `/code-modernization:modernize-status $system` does (where they are, what is stale) in five lines, and end on the exact
+  `/nvi-code-modernization:nvi-modernize-status $system` does (where they are, what is stale) in five lines, and end on the exact
   next command. Stop there.
 
 ## 2 — Find the code
 
-The code is `legacy/$system` (a copy, or a symlink to where it really lives). If it is not there yet, ask where it is
+The code is `legacy/$system` (a copy, or a symlink to where it really lives). If that path is missing but the project contains a physical top-level `$system/` folder, run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/prepare_project.py" $system --workspace .` to create the local alias. If it is still missing, ask where it is
 (this folder, another folder, or a git URL: clone into `legacy/<name>` after they agree). If `$ARGUMENTS` has
 `--source <path>`, use that path. Pick a short name for it (letters, digits, `-` and `_`) if none was given. Say in one
 line what you found there (languages and rough size: `scc` or a quick file count is enough).
@@ -59,6 +62,6 @@ first and let the assessment's recommended pattern pick the road. Name the place
 ## 6 — First step
 
 Give the exact command with everything filled in, for example
-`/code-modernization:modernize-preflight billing "Java 17" --source /work/billing`, and ask "Shall I start it?". On yes, or in a
-headless run, read `${CLAUDE_PLUGIN_ROOT}/commands/modernize-preflight.md` and carry it out with those arguments as if they had
+`/nvi-code-modernization:nvi-modernize-preflight billing "Java 17" --source /work/billing`, and ask "Shall I start it?". On yes, or in a
+headless run, read `${CLAUDE_PLUGIN_ROOT}/commands/nvi-modernize-preflight.md` and carry it out with those arguments as if they had
 typed it. After it finishes, name the next command.

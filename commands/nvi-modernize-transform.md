@@ -8,7 +8,7 @@ Transform module **`$module`** of `$system` into **$target_stack**, with proof o
 equivalence. This is one vertical slice of the strangler fig; output goes to
 `modernized/$system/$module/`.
 
-The code is `legacy/$system`, often a symlink to where it really lives: say where it points (`readlink legacy/$system`) in one line before you start. If `legacy/$system` does not exist, stop and say so: nothing can run without the code, so the fix is `/code-modernization:modernize $system --source <path to the code>`. Run every subagent in the foreground and wait for its result: never end your turn while one is still running. Stop any server or other process you started (a legacy app on a local port, a watcher) before you finish, and say you did. **If `$module` or `$target_stack` is empty**, read
+The code is `legacy/$system`, often a symlink to where it really lives: say where it points (`readlink legacy/$system`) in one line before you start. If `legacy/$system` does not exist, stop and say so: nothing can run without the code, so the fix is `/nvi-code-modernization:nvi-modernize $system --source <path to the code>`. Run every subagent in the foreground and wait for its result: never end your turn while one is still running. Stop any server or other process you started (a legacy app on a local port, a watcher) before you finish, and say you did. **If `$module` or `$target_stack` is empty**, read
 `analysis/$system/MODERNIZATION_BRIEF.md`: take the target stack it names, and the first module of
 the earliest phase whose `Command:` is `transform` that has no
 `modernized/$system/<module>/TRANSFORMATION_NOTES.md` yet (with no brief, the target in `INTENT.md`). Say which you picked.
@@ -18,7 +18,7 @@ the earliest phase whose `Command:` is `transform` that has no
 **Target stack (required).** The runtime, package manager and test framework must respond
 (`java -version` and `mvn -v`, `node -v` and `npm -v`, `python3 -V` and `pytest --version`). If not,
 stop and say what to install: a plan gate now would only defer the failure an hour. Point to
-`/code-modernization:modernize-preflight $system $target_stack`.
+`/nvi-code-modernization:nvi-modernize-preflight $system $target_stack`.
 
 **Legacy stack (advisory, never a blocker).** Try a syntax-only compile of the module. Legacy code
 often cannot build locally by nature (CICS and IMS programs have no local translator; the real runtime
@@ -96,7 +96,7 @@ unreachable branches) and why; the canary result and the executed-case count; fo
 dependent module. Show one representative behavior side by side
 (`diff -y --width=160 <(sed -n '<lines>p' <legacy file>) <target file>`). Never pick a credential-bearing
 range, and mask any credential-like literal in the notes: they live in `modernized/` and get committed.
-This is your own evidence: `/code-modernization:modernize-verify $system $module` is the independent re-check
+This is your own evidence: `/nvi-code-modernization:nvi-modernize-verify $system $module` is the independent re-check
 (it re-runs the tests and the comparison, tries new inputs, and gives one verdict).
 
 ## Step 5 — Architecture review
@@ -105,5 +105,5 @@ Spawn the **architecture-critic** subagent to review the code against $target_st
 Apply HIGH-severity feedback and list the rest in the notes.
 
 Report: tests passing, cases executed, lines of legacy retired, where the artifacts are. Refresh the
-report (`python3 "${CLAUDE_PLUGIN_ROOT}/scripts/build_report.py" $system`, a convenience: if it fails or `python3` is missing, say so in one line and carry on). The next step is the brief's next module, or `/code-modernization:modernize-harden $system`
+report (`python3 "${CLAUDE_PLUGIN_ROOT}/scripts/build_report.py" $system`, a convenience: if it fails or `python3` is missing, say so in one line and carry on). The next step is the brief's next module, or `/nvi-code-modernization:nvi-modernize-harden $system`
 when the phase is done.

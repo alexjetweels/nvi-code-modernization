@@ -1,9 +1,9 @@
 export const meta = {
-  name: 'modernize-reimagine-scaffold',
+  name: 'nvi-modernize-reimagine-scaffold',
   description:
-    'Phase E of /code-modernization:modernize-reimagine: scaffold every approved service in parallel — no cap; the runtime queues agents against its concurrency limit',
+    'Phase E of /nvi-code-modernization:nvi-modernize-reimagine: scaffold every approved service in parallel — no cap; the runtime queues agents against its concurrency limit',
   whenToUse:
-    'Invoked by /code-modernization:modernize-reimagine AFTER the human approves the architecture (HITL checkpoint #2). Requires args {system, services: [{name, responsibilities}]}. Scaffolding agents write only under modernized/<system>-reimagined/<service>/ — disjoint directories, so no worktree isolation is needed.',
+    'Invoked by /nvi-code-modernization:nvi-modernize-reimagine AFTER the human approves the architecture (HITL checkpoint #2). Requires args {system, services: [{name, responsibilities}]}. Scaffolding agents write only under modernized/<system>-reimagined/<service>/ — disjoint directories, so no worktree isolation is needed.',
   phases: [{ title: 'Scaffold', detail: 'one agent per approved service' }],
 }
 
@@ -17,7 +17,7 @@ const system = ARGS && ARGS.system
 const services = ARGS && ARGS.services
 if (!system || !Array.isArray(services) || services.length === 0) {
   throw new Error(
-    'modernize-reimagine-scaffold requires args: {system: "<system-dir>", services: [{name: "...", responsibilities: "..."}]} — run it only after the architecture is approved',
+    'nvi-modernize-reimagine-scaffold requires args: {system: "<system-dir>", services: [{name: "...", responsibilities: "..."}]} — run it only after the architecture is approved',
   )
 }
 
@@ -76,7 +76,7 @@ Create under modernized/${system}-reimagined/${svc.name}/ ONLY (write nowhere el
 
 SECURITY INVARIANTS: no credential literal from legacy code becomes a test fixture or config default — use fake same-shape values and env-var placeholders (\${DATABASE_URL}).`,
       {
-        agentType: 'code-modernization:scaffolder',
+        agentType: 'nvi-code-modernization:scaffolder',
         label: `scaffold:${svc.name}`,
         phase: 'Scaffold',
         schema: RESULT_SCHEMA,

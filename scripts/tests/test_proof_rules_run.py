@@ -1,6 +1,6 @@
 """Tests for the "Rules traced" check: a rule is tested only when something that ran and passed backs it, and test-only folders are not judged.
 
-Run:  python3 -m unittest discover -s plugins/code-modernization/scripts/tests
+Run:  python3 -m unittest discover -s plugins/nvi-code-modernization/scripts/tests
 A test that names a rule is not a test that ran: skipped and pending tests, and files whose class never ran, leave the rule "named, not run".
 """
 import json
@@ -444,6 +444,7 @@ class HostileInput(unittest.TestCase):
         self.assertNotRegex(md, r"[\x00\x1b\u202e\u2028]")
         self.assertEqual(self.ws.module()["evidence"]["rules"]["p0"][0]["id"], "RULE-001")
 
+    @unittest.skipIf(os.name == "nt", "Windows forbids pipes in file names")
     def test_hostile_file_names_and_lines_stay_inside_the_p0_table(self):
         self.ws.test_file("Rule001|`x`Y.java", "// RULE-001 | RULE-002 |\n| a | b |\n")
         self.ws.test_file("CalcTest.java", "@Disabled " + "RULE-001 " * 300000 + "x" * 3000000)
@@ -476,6 +477,7 @@ class HostileInput(unittest.TestCase):
         self.assertEqual(len(p0), 100)                                                   # the pack keeps the first hundred rows, as before
         self.assertTrue(all(r["status"] == "tested" and r["by"] == "test name" for r in p0))
 
+    @unittest.skipIf(os.name == "nt", "Windows forbids newlines and pipes in directory names")
     def test_a_hostile_tooling_folder_name_stays_one_plain_list_item(self):
         put(self.ws.root, "modernized/s/h`\n## Injected | x/pom.xml", "<project/>", T0 + 20)
         put(self.ws.root, "modernized/s/h`\n## Injected | x/src/test/ATest.java", "class ATest {}\n", T0 + 20)

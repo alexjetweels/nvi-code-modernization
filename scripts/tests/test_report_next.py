@@ -19,24 +19,30 @@ class NextStep(unittest.TestCase):
         for i, key in enumerate(order):
             done = {k: False for k in order[i:]}
             done.update(brief=False, build=False, harden=False)
-            self.assertTrue(self.cmd(done).startswith("/code-modernization:modernize-" + ["preflight", "assess", "map", "extract-rules"][i]))
+            self.assertTrue(self.cmd(done).startswith("/nvi-code-modernization:nvi-modernize-" + ["preflight", "assess", "map", "extract-rules"][i]))
 
     def test_flagged_rules_go_to_review_once_and_then_on(self):
         flagged = {"rules": {"defects": 2}}
-        self.assertIn("modernize-review", self.cmd({"brief": False}, flagged))
+        self.assertIn("nvi-modernize-review", self.cmd({"brief": False}, flagged))
         reviewed = {"rules": {"defects": 2, "reviews": {"confirmed": 1}}}
-        self.assertIn("modernize-brief", self.cmd({"brief": False}, reviewed))
+        self.assertIn("nvi-modernize-brief", self.cmd({"brief": False}, reviewed))
 
     def test_a_build_is_verified_before_anything_else(self):
-        self.assertIn("modernize-verify", self.cmd({"harden": False}))
-        self.assertIn("modernize-verify", self.cmd({"harden": False}, {"proof": {"verdict": "NOT PROVEN"}}))
-        self.assertIn("modernize-harden", self.cmd({"harden": False}, {"proof": {"verdict": "PROVEN"}}))
+        self.assertIn("nvi-modernize-verify", self.cmd({"harden": False}))
+        self.assertIn("nvi-modernize-verify", self.cmd({"harden": False}, {"proof": {"verdict": "NOT PROVEN"}}))
+        self.assertIn("nvi-modernize-harden", self.cmd({"harden": False}, {"proof": {"verdict": "PROVEN"}}))
 
     def test_everything_done_points_at_status_and_text_is_bounded(self):
         step = br.next_step("s", ALL, {"proof": {"verdict": "PROVEN"}})
-        self.assertIn("modernize-status", step["command"])
+        self.assertIn("nvi-modernize-status", step["command"])
         hostile = br.next_step("s", ALL, {"proof": {"verdict": "X" * 5000}})
         self.assertLess(len(hostile["why"]), 200)
+
+    def test_next_command_uses_selected_host(self):
+        done = dict(ALL, preflight=False)
+        self.assertEqual(br.next_step("sys", done, {}, "codex")["command"], "$nvi-code-modernization preflight sys")
+        for host in ("copilot-cli", "copilot-vscode", "antigravity"):
+            self.assertEqual(br.next_step("sys", done, {}, host)["command"], "/nvi-modernize preflight sys")
 
 
 if __name__ == "__main__":

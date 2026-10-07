@@ -21,9 +21,9 @@ in_use() {
 }
 
 case "$mode" in
-  command) printf '%s' "$input" | grep -Eq '"prompt"[[:space:]]*:[[:space:]]*"[[:space:]]*/(code-modernization:)?modernize' || exit 0 ;;
+  command) printf '%s' "$input" | grep -Eq '"prompt"[[:space:]]*:[[:space:]]*"[[:space:]]*/(nvi-code-modernization:)?modernize' || exit 0 ;;
   state|run) in_use || exit 0 ;;
-  failure) in_use || printf '%s' "$input" | grep -q 'code-modernization' || exit 0 ;;
+  failure) in_use || printf '%s' "$input" | grep -q 'nvi-code-modernization' || exit 0 ;;
   health) ;;
   *) exit 0 ;;
 esac
@@ -56,7 +56,7 @@ pv=$(( ${1:-0} * 10000 + ${2:-0} * 100 + ${3:-0} ))
 marker=""
 if [ "$mode" = health ]; then
   d=${CLAUDE_PLUGIN_DATA:-}
-  [ -d "$d" ] || d="${TMPDIR:-/tmp}/code-modernization-$(id -u 2>/dev/null || echo 0)"
+  [ -d "$d" ] || d="${TMPDIR:-/tmp}/nvi-code-modernization-$(id -u 2>/dev/null || echo 0)"
   mkdir -p -m 700 "$d" 2>/dev/null
   [ -d "$d" ] && [ ! -L "$d" ] && [ -O "$d" ] || exit 0
   marker="$d/health-sent-$pv"
@@ -108,8 +108,8 @@ done
 # No interpreter could run the script. Say so in numbers, for a command the person typed or an interpreter failure.
 case "$mode" in
   command)
-    verb=$(printf '%s' "$input" | grep -Eo '"prompt"[[:space:]]*:[[:space:]]*"[[:space:]]*/(code-modernization:)?modernize[a-z-]*' | head -1)
-    ns=""; case "$verb" in *code-modernization:*) ns=1 ;; esac
+    verb=$(printf '%s' "$input" | grep -Eo '"prompt"[[:space:]]*:[[:space:]]*"[[:space:]]*/(nvi-code-modernization:)?modernize[a-z-]*' | head -1)
+    ns=""; case "$verb" in *nvi-code-modernization:*) ns=1 ;; esac
     verb=${verb##*modernize}
     case "$verb" in
       ""|-) c=1 ;; -preflight) c=2 ;; -assess) c=3 ;; -map) c=4 ;; -extract-rules) c=5 ;; -review) c=6 ;; -brief) c=7 ;;

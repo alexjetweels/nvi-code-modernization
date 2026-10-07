@@ -21,7 +21,7 @@ Use the AskUserQuestion tool, never chat text, up to four rules per call. One qu
 
 ## 3 — Record
 
-Merge the answers into `analysis/$system/RULE_REVIEWS.json`, the same file the live progress pane's review deck (`/modernize-review-pane`) writes:
+Merge the answers into `analysis/$system/RULE_REVIEWS.json`, the same file the live progress pane's review deck (`/nvi-modernize-review-pane`) writes:
 
 ```json
 { "system": "<name>", "version": 1, "reviews": {
@@ -32,4 +32,4 @@ Merge the answers into `analysis/$system/RULE_REVIEWS.json`, the same file the l
 
 ## 4 — What happens next
 
-Tell the person, in three lines: rules marked wrong or needing discussion are not settled; `brief` lists them as open questions and never builds a Behavior Contract on them; `transform` and `reimagine` will not pin a wrong rule as the oracle and stop on a P0 rule still under discussion. Then the next command: `/code-modernization:modernize-brief $system` (run it again if the brief exists and any rule changed), or the brief's next build command when the plan is already approved.
+Tell the person, in three lines: rules marked wrong or needing discussion are not settled; `brief` lists them as open questions and never builds a Behavior Contract on them; `transform` and `reimagine` will not pin a wrong rule as the oracle and stop on a P0 rule still under discussion. Then the next command: `/nvi-code-modernization:nvi-modernize-brief $system` (run it again if the brief exists and any rule changed), or the brief's next build command when the plan is already approved.

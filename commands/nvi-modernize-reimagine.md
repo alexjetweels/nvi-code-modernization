@@ -6,7 +6,7 @@ arguments: system
 
 The first token of `$ARGUMENTS` is the system name (`$system`); **everything after it is the target
 vision**, usually several words, so do not truncate it (with none, use the one in `analysis/$system/INTENT.md`). Below, `<vision>` means that whole remainder.
-The code is `legacy/$system`, often a symlink to where it really lives: say where it points (`readlink legacy/$system`) in one line before you start. If `legacy/$system` does not exist, stop and say so: nothing can run without the code, so the fix is `/code-modernization:modernize $system --source <path to the code>`. Run every subagent in the foreground and wait for its result: never end your turn while one is still running. Stop any server or other process you started (a legacy app on a local port, a watcher) before you finish, and say you did.
+The code is `legacy/$system`, often a symlink to where it really lives: say where it points (`readlink legacy/$system`) in one line before you start. If `legacy/$system` does not exist, stop and say so: nothing can run without the code, so the fix is `/nvi-code-modernization:nvi-modernize $system --source <path to the code>`. Run every subagent in the foreground and wait for its result: never end your turn while one is still running. Stop any server or other process you started (a legacy app on a local port, a watcher) before you finish, and say you did.
 
 **Reimagine** the system as: <vision>. This is not a port but a rebuild from extracted intent: the legacy
 system is the *specification source*, not the structural template. The command orchestrates a team of
@@ -67,7 +67,7 @@ Call it by name (the plugin registers it). If the tool does not know the name, p
 
 ```
 Workflow({
-  name: "code-modernization:modernize-reimagine-scaffold",
+  name: "nvi-code-modernization:nvi-modernize-reimagine-scaffold",
   args: { system: "$system", services: [
     { name: "<service-name>", responsibilities: "<one line from the architecture>" }, ...
   ] }
@@ -100,4 +100,4 @@ a pointer to where they are provisioned, never values. This file also marks the 
 Report: services scaffolded, acceptance tests defined, the share of behaviors with a home, and where the
 artifacts are. Refresh the report (`python3 "${CLAUDE_PLUGIN_ROOT}/scripts/build_report.py" $system`,
 a convenience: if it fails or `python3` is missing, say so in one line and carry on). The next step is implementing the pending rules service by service,
-then `/code-modernization:modernize-harden $system`.
+then `/nvi-code-modernization:nvi-modernize-harden $system`.

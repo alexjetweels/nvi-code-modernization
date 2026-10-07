@@ -21,7 +21,7 @@ The code is `legacy/$system`, often a symlink to where it really lives: say wher
 **Reimagine:** each service in `modernized/$system-reimagined/`. Name them. With a `$module` (for an uplift, a unit)
 re-run only that one; the pack still judges every built module from its current evidence, never from an earlier run.
 A folder that holds only test code and the files that build it (a parity harness, say) is test tooling: the pack lists it as not judged and leaves it out of the verdict.
-If nothing is built, say so and stop: the next step is the brief's Phase 1 command (`/code-modernization:modernize-status $system`).
+If nothing is built, say so and stop: the next step is the brief's Phase 1 command (`/nvi-code-modernization:nvi-modernize-status $system`).
 
 ## 2 — Which rules do the tests name?
 
@@ -102,7 +102,10 @@ and `cases.json` are the development cases: never touch them.
 
 ## 5 — Record it and write the proof pack
 
-The pack checks by itself that `legacy/` is untouched (file times against `PREFLIGHT.md`; no version-control tool is run) and lists the
+If `analysis/$system/SOURCE_SNAPSHOT.json` exists, run
+`python3 "${CLAUDE_PLUGIN_ROOT}/scripts/source_guard.py" verify $system --workspace .` and report any changed or unknown result.
+The pack checks source hashes against that snapshot when present; older workspaces fall back to file times against `PREFLIGHT.md`.
+No version-control tool is run in the legacy tree. The pack also lists the
 brief's unticked §7 questions and exit criteria; a person decides those, so never tick one. Write
 `analysis/$system/equivalence/test-runs.json` once, from what you did in steps 3 and 4 (paths and words only):
 
@@ -132,8 +135,8 @@ missing, say so in one line and carry on), then name the next step. **PARTLY PRO
 command. A failure caused by this machine: run the suite where the tool works (a terminal outside the sandbox, or CI), then run this
 command again. A difference the notes call intended: a person records it (once per input with `"approvedInputs": {"F23": "why"}` at the top of
 `fresh-cases.json`, or `approvedDifference` in one case, or the table in `BASELINE.md`); you never do. P0 rules "named, not run" or named by no test: the test that pins each one must run and pass (write or enable it, keep its result file); adding an id or dropping a skip marker without that proves nothing. Then run this again. Any other failing
-test or difference: `/code-modernization:modernize-transform $system <module>`, or for an uplift `/code-modernization:modernize-uplift $system`
+test or difference: `/nvi-code-modernization:nvi-modernize-transform $system <module>`, or for an uplift `/nvi-code-modernization:nvi-modernize-uplift $system`
 (also for a baseline typed by hand, which is measured again in its Step 4, and for a silent delta no test names, which gets a
 characterization test there). Removed or changed test files are a person's review, never yours to undo.
 **PROVEN:** it is evidence, not approval. A named person signs `analysis/$system/VERIFICATION.md`; then the brief's next module, or
-`/code-modernization:modernize-harden $system`.
+`/nvi-code-modernization:nvi-modernize-harden $system`.

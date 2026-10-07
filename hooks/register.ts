@@ -38,7 +38,7 @@ const POLL_MS = 20_000
 const WRITE_TOOLS = new Set(['Edit', 'Write', 'NotebookEdit', 'MultiEdit'])
 const QUIET_TOOLS = new Set(['Read', 'Glob', 'Grep', 'LS', 'WebFetch', 'WebSearch', 'TodoWrite', 'ToolSearch'])
 const PARENT_TOOLS = new Set(['Agent', 'Task', 'Workflow'])
-const STEP = /\/(?:[\w-]+:)?(modernize-[a-z-]+)\b[^\n]*/
+const STEP = /\/(?:[\w-]+:)?(nvi-modernize-[a-z-]+)\b[^\n]*/
 
 const nowMs = (): number => Date.now()
 
@@ -723,7 +723,7 @@ export function register(on: On, raw: PluginOptions) {
     await Promise.all([
       host
         .registerCommand({
-          name: 'modernize-panel',
+          name: 'nvi-modernize-panel',
           description: 'Show or hide the modernization progress pane and estate map',
           argumentHint: '[open|close|json]',
           immediate: true,
@@ -731,14 +731,14 @@ export function register(on: On, raw: PluginOptions) {
         .catch(() => undefined),
       host
         .registerCommand({
-          name: 'modernize-review-pane',
+          name: 'nvi-modernize-review-pane',
           description: 'Review business rules one card at a time in the pane: confirm, wrong, or discuss',
           argumentHint: '[flagged|p0|all] [filter]',
         })
         .catch(() => undefined),
       host
         .registerCommand({
-          name: 'modernize-sign',
+          name: 'nvi-modernize-sign',
           description: 'Sign the modernization brief\'s approval block (a person\'s action)',
           argumentHint: '[approver name, role]',
         })
@@ -946,7 +946,7 @@ export function register(on: On, raw: PluginOptions) {
 
   // -------------------------------------------------------------- commands
 
-  on('command.run', { command: 'modernize-panel' }, async ($, e, next) => {
+  on('command.run', { command: 'nvi-modernize-panel' }, async ($, e, next) => {
     const host = state.host
 
     if (host === null) {
@@ -1023,7 +1023,7 @@ export function register(on: On, raw: PluginOptions) {
     return { text: opened.isPlaced ? 'Modernization pane shown' : `The pane could not be shown: ${opened.reason}` }
   })
 
-  on('command.run', { command: 'modernize-review-pane' }, async ($, e, next) => {
+  on('command.run', { command: 'nvi-modernize-review-pane' }, async ($, e, next) => {
     const host = state.host
 
     if (host === null) {
@@ -1041,7 +1041,7 @@ export function register(on: On, raw: PluginOptions) {
     return { text }
   })
 
-  on('command.run', { command: 'modernize-sign' }, async ($, e, next) => {
+  on('command.run', { command: 'nvi-modernize-sign' }, async ($, e, next) => {
     const host = state.host
 
     if (host === null) {

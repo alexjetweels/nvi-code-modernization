@@ -1,9 +1,9 @@
 export const meta = {
-  name: 'modernize-uplift-deltas',
+  name: 'nvi-modernize-uplift-deltas',
   description:
     'Same-stack uplift delta catalog: one finder per delta category (intersecting known version breaking-changes with this code), each verified against the cited source',
   whenToUse:
-    'Invoked by /code-modernization:modernize-uplift when the Workflow tool is available. Requires args {system, source, target, projectPattern?}. Returns structured delta cards — the calling session writes DELTA_CATALOG.md and runs the migration (build/dual-run are HITL, not in this workflow).',
+    'Invoked by /nvi-code-modernization:nvi-modernize-uplift when the Workflow tool is available. Requires args {system, source, target, projectPattern?}. Returns structured delta cards — the calling session writes DELTA_CATALOG.md and runs the migration (build/dual-run are HITL, not in this workflow).',
   phases: [
     { title: 'Find', detail: 'one finder per delta category + ecosystem-tool report' },
     { title: 'Verify', detail: 'one referee per delta — does this code really hit it?' },
@@ -21,7 +21,7 @@ const source = ARGS && ARGS.source
 const target = ARGS && ARGS.target
 if (!system || !source || !target) {
   throw new Error(
-    'modernize-uplift-deltas requires args: {system, source, target, projectPattern?} — e.g. {system:"app", source:".NET Framework 4.8", target:".NET 8"}',
+    'nvi-modernize-uplift-deltas requires args: {system, source, target, projectPattern?} — e.g. {system:"app", source:".NET Framework 4.8", target:".NET 8"}',
   )
 }
 if (!/^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(system)) {
@@ -125,7 +125,7 @@ A delta belongs in the catalog ONLY if it is in the intersection of (a) a known 
 Mark each delta Mechanical (a codemod/tool can apply it) or Judgment (needs a human). For Behavioral-silent deltas, give the exact test to write before touching the code.
 ${UNTRUSTED}`,
       {
-        agentType: 'code-modernization:version-delta-analyst',
+        agentType: 'nvi-code-modernization:version-delta-analyst',
         label: `find:${c.key}`,
         phase: 'Find',
         schema: DELTAS_SCHEMA,
@@ -166,7 +166,7 @@ ${fence(`Cited site (open this): ${d.source_site}\nDelta: ${d.name}\n${d.oldToNe
 Verdict 'confirmed' only if the cited code actually uses the changed/removed API or hits the behavior. 'not-hit' if the delta is real for ${source}→${target} but this code does not actually trigger it (no real usage at the site). 'wrong-site' if real but cited elsewhere (give correctedSite). Correct the fix class if mislabeled.
 ${UNTRUSTED}`,
       {
-        agentType: 'code-modernization:version-delta-analyst',
+        agentType: 'nvi-code-modernization:version-delta-analyst',
         label: `verify:${(d.source_site || '').split(':')[0].split('/').pop()}`,
         phase: 'Verify',
         schema: VERDICT_SCHEMA,
@@ -223,10 +223,10 @@ return {
   // the codebase. The orchestrating command compares totalTouchedSites to the
   // system's file/LOC count (the command has that from assess; the workflow has
   // no fs access) — if most of the code is forced to change, it's a rewrite, not
-  // an uplift, and the command recommends /code-modernization:modernize-transform. judgment-share is
+  // an uplift, and the command recommends /nvi-code-modernization:nvi-modernize-transform. judgment-share is
   // a SECONDARY "how much human effort", not the gate.
   upliftVsRewriteSignal:
     confirmed.length === 0
       ? 'no deltas found — verify the version pair and whether the migration tool could actually run'
-      : `${totalSites} touched sites across ${confirmed.length} deltas (${judgmentSites} of them at judgment-class sites). Compare totalTouchedSites against the codebase size from assess: if it approaches "most of the tree", this is a rewrite — recommend /code-modernization:modernize-transform. Judgment share (${Math.round((judgmentCount / confirmed.length) * 100)}% of cards) is a secondary effort signal, not the gate.`,
+      : `${totalSites} touched sites across ${confirmed.length} deltas (${judgmentSites} of them at judgment-class sites). Compare totalTouchedSites against the codebase size from assess: if it approaches "most of the tree", this is a rewrite — recommend /nvi-code-modernization:nvi-modernize-transform. Judgment share (${Math.round((judgmentCount / confirmed.length) * 100)}% of cards) is a secondary effort signal, not the gate.`,
 }

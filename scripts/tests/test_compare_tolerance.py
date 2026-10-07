@@ -1,6 +1,6 @@
 """Tests for the numeric tolerance in scripts/compare.py.
 
-Run:  python3 -m unittest discover -s plugins/code-modernization/scripts/tests
+Run:  python3 -m unittest discover -s plugins/nvi-code-modernization/scripts/tests
 """
 import json
 import os

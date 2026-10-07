@@ -1,0 +1,14 @@
+{
+  "name": "nvi-plugins",
+  "description": "NVI development plugins",
+  "owner": {
+    "name": "NVI"
+  },
+  "plugins": [
+    {
+      "name": "nvi-code-modernization",
+      "source": "./",
+      "description": "Assess, migrate, and verify legacy code with executable evidence"
+    }
+  ]
+}

@@ -34,15 +34,15 @@ the output so an auditor can follow it:
                        traces and the best possible verdict is PARTLY PROVEN.
   5  Canary            a deliberate one-line break whose own result file or saved runner log, parsed
                        here, shows failing tests. A "Canary:" line in the notes is a claim, not evidence.
-  6  Source untouched  no file under legacy/<system> is newer than the analysis (PREFLIGHT.md); a plain
-                       file walk, no version-control tool is run inside the untrusted tree.
+  6  Source untouched  a SHA-256 snapshot is compared when present; older workspaces fall back to
+                       modification times relative to PREFLIGHT.md. No program is run in the tree.
 
 Open questions, unticked criteria and the sign-off are for a person: they never change the verdict.
 A built folder that holds only test code and the files that build it (a parity harness, for one) is not a
 module: it is listed as "Test tooling (not judged)", under "toolingOnly" in the JSON, and not counted.
 
 Evidence read (under analysis/<system>/, or as named): equivalence/test-runs.json (written by the
-modernize-verify command), equivalence/[<module>/]cases.json and fresh-cases.json (judged again here,
+nvi-modernize-verify command), equivalence/[<module>/]cases.json and fresh-cases.json (judged again here,
 not read from EQUIVALENCE.json), BASELINE.md, BUSINESS_RULES.md with the code under modernized/,
 MODERNIZATION_BRIEF.md, the notes files, and legacy/<system>. Everything read is untrusted text: it is
 never run, links out of the workspace are refused, sizes are capped. Exit 0 when every verdict is
@@ -61,6 +61,7 @@ sys.dont_write_bytecode = True          # importing the sibling scripts must not
 sys.path.insert(0, HERE)
 import baseline_diff  # noqa: E402
 import compare  # noqa: E402
+import source_guard  # noqa: E402
 import trace_rules  # noqa: E402
 import uplift_checks  # noqa: E402
 
@@ -80,7 +81,7 @@ RULES_TEXT = (
     "4. Fresh inputs: at least 10 new inputs, none with the same output as a development case, ran on the legacy and the new code with no difference. Needed whenever the legacy could run here; "
     "when it could not, the proof is trace-based and the best verdict is PARTLY PROVEN.",
     "5. Canary: a deliberate one-line break whose own result file or saved runner log shows failing tests. A line in the notes is a claim.",
-    "6. Source untouched: no file under legacy/<system> is newer than the analysis (PREFLIGHT.md), by a plain file walk; no version-control tool is run.",
+    "6. Source untouched: compare the legacy tree with its SHA-256 snapshot when one exists; older workspaces fall back to modification times relative to PREFLIGHT.md. No version-control tool is run.",
     "7. Baseline measured (uplift): the old version's numbers in BASELINE.md come from per-test result files, a per-test results file or a raw runner log that this script parsed "
     "(in analysis/<system>/baseline/, or on a Recorded: or Machine-readable: line of BASELINE.md), and the typed table agrees with them. A table typed by hand, or sources that disagree, cannot reach PROVEN.",
     "8. Tests kept (uplift): no test file of the untouched legacy tree is missing from the working copy, no more than 25% of them changed, and the legacy tree has test files to compare against "
@@ -297,6 +298,12 @@ def source_check(workspace, system, adir):
     out = {"state": "unknown", "method": NO_VCS, "detail": "", "files": [], "path": "legacy/" + system, "target": clean(target if os.path.islink(link) else "", 300)}
     if not target or not os.path.isdir(target):
         out["detail"] = "legacy/%s was not found, so it was not checked" % system
+        return out
+    if os.path.lexists(os.path.join(adir, "SOURCE_SNAPSHOT.json")):
+        guarded = source_guard.verify(workspace, system)
+        out.update({"state": guarded["state"], "method": guarded["method"],
+                    "detail": clean(guarded["detail"], 300),
+                    "files": [clean(name, 200) for name in guarded["files"][:EXAMPLES]]})
         return out
     ref = reference_time(adir)
     if ref is None:
@@ -855,7 +862,7 @@ def build(system, workspace, module=None, now=None):
     try:
         ctx["trace"] = trace_rules.trace(workspace, system, ctx["ran"])
     except OSError as err:
-        ctx["trace_problem"] = "%s, so no rule can be traced (run /code-modernization:modernize-extract-rules %s)." % (clean(str(err), 200), system)
+        ctx["trace_problem"] = "%s, so no rule can be traced (run /nvi-code-modernization:nvi-modernize-extract-rules %s)." % (clean(str(err), 200), system)
     # a folder of only test code and the files that build it (a parity harness) is not a module: listed, not judged, not counted
     tooling = [s for s in everything if s["track"] != "uplift" and trace_rules.tooling_only(s["path"])]
     mods = [evaluate(s, ctx) for s in sorted(everything, key=lambda s: s["name"].lower()) if s not in tooling]
